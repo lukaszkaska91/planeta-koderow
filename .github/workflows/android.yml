@@ -9,7 +9,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Pobierz kod
+      - name: Pobierz pliki z repozytorium
         uses: actions/checkout@v4
 
       - name: Zainstaluj Java 17
@@ -18,16 +18,213 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Przygotuj Gradle
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: '8.4'
+      - name: Automatycznie przygotuj caly projekt Android i zbuduj APK
+        run: |
+          # 1. Znajdz plik index.html (nawet jesli jest w podfolderze)
+          HTML_FILE=$(find . -name "index.html" | head -n 1)
+          if [ -z "$HTML_FILE" ]; then
+            echo "BLAD: Nie znaleziono pliku index.html w repozytorium! Wgraj plik index.html."
+            exit 1
+          fi
+          echo "Znaleziono plik HTML: $HTML_FILE"
 
-      - name: Zbuduj plik APK
-        run: gradle assembleDebug
+          # 2. Stworz czysta strukture projektu Android
+          mkdir -p /tmp/pk_build/app/src/main/assets
+          mkdir -p /tmp/pk_build/app/src/main/java/pl/planetakoderow/apka
+          cp "$HTML_FILE" /tmp/pk_build/app/src/main/assets/index.html
+          cd /tmp/pk_build
+
+          # 3. Utworz settings.gradle
+          cat << 'EOF' > settings.gradle
+          rootProject.name = "PlanetaKoderow"
+          include ':app'
+          EOF
+
+          # 4. Utworz glowny build.gradle
+          cat << 'EOF' > build.gradle
+          buildscript {
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+              dependencies {
+                  classpath 'com.android.tools.build:gradle:8.1.2'
+              }
+          }
+          allprojects {
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+          }
+          EOF
+
+          # 5. Utworz app/build.gradle
+          cat << 'EOF' > app/build.gradle
+          plugins {
+              id 'com.android.application'
+          }
+          android {
+              namespace 'pl.planetakoderow.apka'
+              compileSdk 34
+              defaultConfig {
+                  applicationId "pl.planetakoderow.apka"
+                  minSdk 24
+                  targetSdk 34
+                  versionCode 1
+                  versionName "1.0"
+              }
+              buildTypes {
+                  release {
+                      minifyEnabled false
+                  }
+              }
+              compileOptions {
+                  sourceCompatibility JavaVersion.VERSION_17
+                  targetCompatibility JavaVersion.VERSION_17
+              }
+          }
+          EOF
+
+          # 6. Utworz AndroidManifest.xml (z pelnym wsparciem LEGO SPIKE 3)
+          cat << 'EOF' > app/src/main/AndroidManifest.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+              <uses-permission android:name="android.permission.INTERNET" />
+              <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+              <queries>
+                  <package android:name="com.lego.education.spikenext" />
+                  <package android:name="com.lego.education.spike" />
+                  <intent>
+                      <action android:name="android.intent.action.MAIN" />
+                      <category android:name="android.intent.category.LAUNCHER" />
+                  </intent>
+              </queries>
+              <application
+                  android:allowBackup="true"
+                  android:label="Planeta Koderów"
+                  android:usesCleartextTraffic="true"
+                  android:hardwareAccelerated="true"
+                  android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
+                  <activity
+                      android:name=".MainActivity"
+                      android:exported="true"
+                      android:configChanges="orientation|screenSize|keyboardHidden"
+                      android:screenOrientation="sensorLandscape">
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.LAUNCHER" />
+                      </intent-filter>
+                  </activity>
+              </application>
+          </manifest>
+          EOF
+
+          # 7. Utworz MainActivity.java
+          cat << 'EOF' > app/src/main/java/pl/planetakoderow/apka/MainActivity.java
+          package pl.planetakoderow.apka;
+
+          import android.app.Activity;
+          import android.app.AlertDialog;
+          import android.content.DialogInterface;
+          import android.content.Intent;
+          import android.content.pm.PackageManager;
+          import android.os.Bundle;
+          import android.view.View;
+          import android.view.WindowManager;
+          import android.webkit.JavascriptInterface;
+          import android.webkit.WebChromeClient;
+          import android.webkit.WebSettings;
+          import android.webkit.WebView;
+          import android.webkit.WebViewClient;
+          import android.widget.Toast;
+
+          public class MainActivity extends Activity {
+              private WebView webView;
+
+              @Override
+              protected void onCreate(Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
+                  getWindow().setFlags(
+                      WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                      WindowManager.LayoutParams.FLAG_FULLSCREEN
+                  );
+
+                  webView = new WebView(this);
+                  setContentView(webView);
+
+                  WebSettings settings = webView.getSettings();
+                  settings.setJavaScriptEnabled(true);
+                  settings.setDomStorageEnabled(true);
+                  settings.setDatabaseEnabled(true);
+                  settings.setAllowFileAccess(true);
+                  settings.setAllowContentAccess(true);
+                  settings.setAllowFileAccessFromFileURLs(true);
+                  settings.setAllowUniversalAccessFromFileURLs(true);
+                  settings.setMediaPlaybackRequiresUserGesture(false);
+                  settings.setCacheMode(WebSettings.LOAD_DEFAULT);
+                  settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+
+                  webView.setOverScrollMode(View.OVER_SCROLL_NEVER);
+                  webView.setWebChromeClient(new WebChromeClient());
+                  webView.setWebViewClient(new WebViewClient());
+                  webView.addJavascriptInterface(new WebAppInterface(), "Android");
+
+                  webView.loadUrl("file:///android_asset/index.html");
+              }
+
+              public class WebAppInterface {
+                  @JavascriptInterface
+                  public void launchSpike(String packageName) {
+                      try {
+                          PackageManager pm = getPackageManager();
+                          Intent launchIntent = pm.getLaunchIntentForPackage(packageName);
+                          if (launchIntent == null) {
+                              launchIntent = pm.getLaunchIntentForPackage("com.lego.education.spikenext");
+                          }
+                          if (launchIntent == null) {
+                              launchIntent = pm.getLaunchIntentForPackage("com.lego.education.spike");
+                          }
+                          if (launchIntent != null) {
+                              launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                              startActivity(launchIntent);
+                          } else {
+                              runOnUiThread(() -> Toast.makeText(MainActivity.this,
+                                  "Aplikacja LEGO SPIKE nie jest zainstalowana na tym tablecie!",
+                                  Toast.LENGTH_LONG).show());
+                          }
+                      } catch (Exception e) {
+                          runOnUiThread(() -> Toast.makeText(MainActivity.this,
+                              "Blad otwierania SPIKE: " + e.getMessage(),
+                              Toast.LENGTH_LONG).show());
+                      }
+                  }
+              }
+
+              @Override
+              public void onBackPressed() {
+                  new AlertDialog.Builder(this)
+                      .setTitle("Planeta Koderów")
+                      .setMessage("Czy na pewno chcesz wyjść z aplikacji?")
+                      .setPositiveButton("Tak", new DialogInterface.OnClickListener() {
+                          @Override
+                          public void onClick(DialogInterface dialog, int which) {
+                              finish();
+                          }
+                      })
+                      .setNegativeButton("Nie", null)
+                      .show();
+              }
+          }
+          EOF
+
+          # 8. Pobierz Gradle 8.4 bezposrednio (bez uzycia zepsutego Cache GitHuba) i zbuduj APK
+          curl -sL https://services.gradle.org/distributions/gradle-8.4-bin.zip -o gradle.zip
+          unzip -q gradle.zip
+          ./gradle-8.4/bin/gradle assembleDebug --no-daemon
 
       - name: Udostepnij gotowy plik APK do pobrania
         uses: actions/upload-artifact@v4
         with:
           name: Planeta-Koderow-APK
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: /tmp/pk_build/app/build/outputs/apk/debug/app-debug.apk
