@@ -1,0 +1,1440 @@
+<!DOCTYPE html>
+<html lang="pl" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+  <title>Planeta Koderów</title>
+  <meta name="theme-color" content="#090d16">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800;900&family=Outfit:wght@600;700;800;900&family=Poppins:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: { colors: { pkBlue: '#008be5', pkDarkBg: '#090d16', pkDarkCard: '#131b2e' } } }
+    }
+  </script>
+  <style>
+    html, body {
+      overscroll-behavior-y: none;
+      touch-action: pan-x pan-y;
+    }
+    body { 
+      font-family: 'Inter', sans-serif; 
+      -webkit-tap-highlight-color: transparent; 
+      background-size: cover; 
+      background-position: center; 
+      background-attachment: fixed; 
+    }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .text-shadow-sm { text-shadow: 0 2px 4px rgba(0,0,0,0.18); }
+    #splashScreen { transition: opacity 0.4s ease-out, visibility 0.4s ease-out; }
+    @keyframes dropPinkBrick { 0% { transform: translateY(-140px); opacity: 0; } 70% { transform: translateY(4px); opacity: 1; } 100% { transform: translateY(0); opacity: 1; } }
+    @keyframes dropBlueBrick { 0% { transform: translateY(-200px); opacity: 0; } 70% { transform: translateY(4px); opacity: 1; } 100% { transform: translateY(0); opacity: 1; } }
+    @keyframes dropGreenBrick { 0% { transform: translateY(-260px); opacity: 0; } 70% { transform: translateY(4px); opacity: 1; } 100% { transform: translateY(0); opacity: 1; } }
+    .brick-pink-anim { animation: dropPinkBrick 0.55s cubic-bezier(0.175, 0.885, 0.32, 1.25) 0.15s both; }
+    .brick-blue-anim { animation: dropBlueBrick 0.55s cubic-bezier(0.175, 0.885, 0.32, 1.25) 0.75s both; }
+    .brick-green-anim { animation: dropGreenBrick 0.55s cubic-bezier(0.175, 0.885, 0.32, 1.25) 1.35s both; }
+    @keyframes cardOrbMotion { 0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.22; } 50% { transform: translate(6px, -8px) scale(1.08); opacity: 0.38; } }
+    .floating-card-orb { animation: cardOrbMotion 4.5s infinite ease-in-out; }
+    .floating-card-orb-delayed { animation: cardOrbMotion 5s infinite ease-in-out 1.5s; }
+    @keyframes lockWobble { 0%, 100% { transform: scale(1) rotate(0deg); } 20% { transform: scale(0.98) rotate(-2deg); } 40% { transform: scale(0.98) rotate(2deg); } 60% { transform: scale(0.98) rotate(-1.5deg); } 80% { transform: scale(0.98) rotate(1.5deg); } }
+    .lock-wobble-anim { animation: lockWobble 0.45s ease-in-out; }
+    canvas.pdf-page-canvas { box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.25); border-radius: 12px; margin: 0 auto; max-width: 100%; height: auto !important; background-color: #ffffff; }
+  </style>
+</head>
+<body id="appBody" class="bg-[#f8fafc] dark:bg-pkDarkBg text-slate-900 dark:text-slate-100 min-h-screen flex flex-col select-none overflow-x-hidden transition-colors duration-200">
+  <div id="bgOverlay" class="absolute inset-0 bg-white/40 pointer-events-none z-0 hidden transition-opacity"></div>
+
+  <!-- EKRAN POWITALNY -->
+<div id="splashScreen" onclick="this.remove()" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white dark:bg-pkDarkBg overflow-hidden">
+    <script>setTimeout(function(){ var s=document.getElementById('splashScreen'); if(s) s.remove(); }, 2500);</script>
+    <div class="flex flex-col items-center">
+      <div id="splashLogo" class="transform scale-110 md:scale-130 drop-shadow-sm mb-6"></div>
+      <div class="w-48 h-56 flex items-center justify-center">
+        <svg viewBox="0 0 240 280" class="w-full h-full">
+          <g class="brick-pink-anim">
+            <polygon points="120,174 168,200 120,226 72,200" fill="#f472b6" />
+            <g transform="translate(120, 187)"><path d="M -8,0 L -8,-5.5 A 8 4.5 0 0 1 8,-5.5 L 8,0 Z" fill="#be185d" /><ellipse cx="0" cy="-5.5" rx="8" ry="4.5" fill="#f472b6" /></g>
+            <g transform="translate(96, 200)"><path d="M -8,0 L -8,-5.5 A 8 4.5 0 0 1 8,-5.5 L 8,0 Z" fill="#be185d" /><ellipse cx="0" cy="-5.5" rx="8" ry="4.5" fill="#f472b6" /></g>
+            <g transform="translate(144, 200)"><path d="M -8,0 L -8,-5.5 A 8 4.5 0 0 1 8,-5.5 L 8,0 Z" fill="#be185d" /><ellipse cx="0" cy="-5.5" rx="8" ry="4.5" fill="#f472b6" /></g>
+            <g transform="translate(120, 213)"><path d="M -8,0 L -8,-5.5 A 8 4.5 0 0 1 8,-5.5 L 8,0 Z" fill="#be185d" /><ellipse cx="0" cy="-5.5" rx="8" ry="4.5" fill="#f472b6" /></g>
+            <polygon points="72,200 120,226 120,256 72,230" fill="#e9458b" /><polygon points="120,226 168,200 168,230 120,256" fill="#be185d" />
+          </g>
+          <g class="brick-blue-anim">
+            <polygon points="120,144 168,170 120,196 72,170" fill="#60a5fa" />
+            <g transform="translate(120, 157)"><path d="M -8,0 L -8,-5.5 A 8 4.5 0 0 1 8,-5.5 L 8,0 Z" fill="#1d4ed8" /><ellipse cx="0" cy="-5.5" rx="8" ry="4.5" fill="#60a5fa" /></g>
+            <g transform="translate(96, 170)"><path d="M -8,0 L -8,-5.5 A 8 4.5 0 0 1 8,-5.5 L 8,0 Z" fill="#1d4ed8" /><ellipse cx="0" cy="-5.5" rx="8" ry="4.5" fill="#60a5fa" /></g>
+            <g transform="translate(144, 170)"><path d="M -8,0 L -8,-5.5 A 8 4.5 0 0 1 8,-5.5 L 8,0 Z" fill="#1d4ed8" /><ellipse cx="0" cy="-5.5" rx="8" ry="4.5" fill="#60a5fa" /></g>
+            <g transform="translate(120, 183)"><path d="M -8,0 L -8,-5.5 A 8 4.5 0 0 1 8,-5.5 L 8,0 Z" fill="#1d4ed8" /><ellipse cx="0" cy="-5.5" rx="8" ry="4.5" fill="#60a5fa" /></g>
+            <polygon points="72,170 120,196 120,226 72,200" fill="#3b82f6" /><polygon points="120,196 168,170 168,200 120,226" fill="#1d4ed8" />
+          </g>
+          <g class="brick-green-anim">
+            <polygon points="120,114 168,140 120,166 72,140" fill="#6ee7b7" />
+            <g transform="translate(120, 127)"><path d="M -8.5,0 L -8.5,-6 A 8.5 4.8 0 0 1 8.5,-6 L 8.5,0 Z" fill="#16a34a" /><ellipse cx="0" cy="-6" rx="8.5" ry="4.8" fill="#6ee7b7" stroke="#15803d" stroke-width="0.8" /></g>
+            <g transform="translate(96, 140)"><path d="M -8.5,0 L -8.5,-6 A 8.5 4.8 0 0 1 8.5,-6 L 8.5,0 Z" fill="#16a34a" /><ellipse cx="0" cy="-6" rx="8.5" ry="4.8" fill="#6ee7b7" stroke="#15803d" stroke-width="0.8" /></g>
+            <g transform="translate(144, 140)"><path d="M -8.5,0 L -8.5,-6 A 8.5 4.8 0 0 1 8.5,-6 L 8.5,0 Z" fill="#15803d" /><ellipse cx="0" cy="-6" rx="8.5" ry="4.8" fill="#6ee7b7" stroke="#15803d" stroke-width="0.8" /></g>
+            <g transform="translate(120, 153)"><path d="M -8.5,0 L -8.5,-6 A 8.5 4.8 0 0 1 8.5,-6 L 8.5,0 Z" fill="#16a34a" /><ellipse cx="0" cy="-6" rx="8.5" ry="4.8" fill="#6ee7b7" stroke="#15803d" stroke-width="0.8" /></g>
+            <polygon points="72,140 120,166 120,196 72,170" fill="#22c55e" /><polygon points="120,166 168,140 168,170 120,196" fill="#15803d" />
+          </g>
+        </svg>
+      </div>
+      <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-2">Budowanie świata robotyki...</p>
+    </div>
+  </div>
+
+  <!-- NAGŁÓWEK -->
+  <header class="px-4 sm:px-8 lg:px-12 py-3 flex items-center justify-between flex-shrink-0 z-20 bg-white/95 dark:bg-pkDarkCard/95 border-b border-slate-200/80 dark:border-slate-800 shadow-sm backdrop-blur sticky top-0">
+    <div class="cursor-pointer select-none" onclick="renderGroups()"><div id="brandLogo"></div></div>
+    <div class="flex items-center space-x-2 sm:space-x-3">
+      <!-- PRZYCISK INSTALACJI APLIKACJI NA TABLECIE ANDROID -->
+      <button id="pwaInstallBtn" onclick="installPwaApp()" class="hidden bg-emerald-500 hover:bg-emerald-600 text-white px-3.5 py-1.5 rounded-full text-xs md:text-sm font-black shadow-sm items-center gap-1.5 transition active:scale-95">
+        <i class="fas fa-download"></i><span>Zainstaluj</span>
+      </button>
+
+      <button onclick="toggleDarkMode()" class="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-amber-400 flex items-center justify-center text-sm border border-slate-200 dark:border-slate-700 hover:scale-105 active:scale-95 transition" title="Przełącz motyw">
+        <i id="themeIcon" class="fas fa-sun"></i>
+      </button>
+
+      <div id="cloudStatus" onclick="syncAllFromGoogle(true)" class="cursor-pointer flex items-center gap-2 text-xs md:text-sm font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 px-3.5 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 shadow-sm transition" title="Kliknij, aby pobrać lekcje oraz zapisać instrukcje PDF i zdjęcia do pamięci offline">
+        <span id="cloudDot" class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+        <span id="cloudStatusText">Baza gotowa</span>
+        <i id="syncIcon" class="fas fa-rotate text-xs text-[#008be5] ml-0.5"></i>
+      </div>
+
+      <button onclick="openPinLoginScreen()" class="bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 px-3.5 py-1.5 rounded-full text-xs md:text-sm font-bold border border-slate-200 dark:border-slate-700 shadow-sm flex items-center gap-2 transition active:scale-95">
+        <i class="fas fa-gear text-[#008be5]"></i><span>Ustawienia</span>
+      </button>
+    </div>
+  </header>
+
+  <main id="app" class="flex-1 px-4 sm:px-6 lg:px-10 pb-4 flex flex-col min-h-0 relative z-10 w-full max-w-[1600px] mx-auto"></main>
+
+  <!-- PEŁNY EKRAN PDF (CANVAS OFFLINE) -->
+  <div id="pdfFullscreenModal" class="fixed inset-0 z-50 bg-slate-950 p-2 md:p-4 hidden flex-col">
+    <div class="flex flex-wrap items-center justify-between gap-2 bg-slate-900 px-4 py-2.5 rounded-2xl mb-2 border border-slate-800">
+      <div class="flex items-center gap-2.5 text-white font-bold text-xs md:text-sm truncate max-w-[220px] sm:max-w-xs">
+        <i class="fas fa-file-pdf text-red-500"></i><span id="fsPdfTitle" class="truncate">Instrukcja budowania</span>
+      </div>
+      <div id="fsPdfControls" class="flex items-center gap-2 sm:gap-3">
+        <button onclick="changePdfPage(-1)" class="bg-slate-800 hover:bg-slate-700 active:scale-95 text-white px-4 py-2 rounded-xl text-xs font-black transition flex items-center gap-1.5"><i class="fas fa-chevron-left"></i><span>Poprzednia</span></button>
+        <span id="fsPdfPageIndicator" class="text-xs sm:text-sm font-black text-amber-300 min-w-[90px] text-center">Strona 1 / 1</span>
+        <button onclick="changePdfPage(1)" class="bg-slate-800 hover:bg-slate-700 active:scale-95 text-white px-4 py-2 rounded-xl text-xs font-black transition flex items-center gap-1.5"><span>Następna</span><i class="fas fa-chevron-right"></i></button>
+      </div>
+      <button onclick="closePdfFullscreen()" class="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs px-4 py-2 rounded-xl flex items-center gap-2 shadow transition active:scale-95"><i class="fas fa-compress"></i><span>ZAMKNIJ</span></button>
+    </div>
+    <div class="flex-1 bg-slate-900 rounded-2xl overflow-auto p-2 sm:p-4 flex items-center justify-center relative" id="fsPdfContainer">
+      <canvas id="fsPdfCanvas" class="pdf-page-canvas"></canvas>
+      <iframe id="fsPdfFallbackIframe" class="w-full h-full border-0 hidden rounded-xl" allow="autoplay"></iframe>
+    </div>
+  </div>
+
+  <!-- LOGOWANIE PIN -->
+  <div id="pinLoginModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-pkDarkCard rounded-3xl p-6 md:p-8 max-w-sm w-full shadow-2xl flex flex-col items-center text-center space-y-4 border border-slate-200 dark:border-slate-800">
+      <div class="w-14 h-14 bg-blue-50 dark:bg-blue-950/60 text-[#008be5] rounded-2xl flex items-center justify-center text-2xl border border-blue-200 dark:border-blue-900"><i class="fas fa-lock"></i></div>
+      <div><h3 class="text-xl font-black text-slate-900 dark:text-white">Strefa Instruktora</h3><p class="text-xs text-slate-500 mt-1">Podaj kod PIN, aby otworzyć ustawienia</p></div>
+      <div class="w-full space-y-2">
+        <input type="password" id="modalPinInput" maxlength="6" class="w-full text-center tracking-[0.5em] text-2xl font-black p-3 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-2xl focus:border-[#008be5] outline-none text-slate-900 dark:text-white" placeholder="••••" onkeydown="if(event.key==='Enter') verifyPinLogin()">
+        <p id="pinErrorMsg" class="text-xs font-bold text-rose-500 hidden">Niepoprawny PIN!</p>
+      </div>
+      <div class="flex gap-2 w-full pt-1">
+        <button onclick="closePinLoginScreen()" class="flex-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold py-3 rounded-xl text-xs transition">Anuluj</button>
+        <button onclick="verifyPinLogin()" class="flex-1 bg-[#008be5] hover:bg-blue-600 text-white font-black py-3 rounded-xl text-xs shadow-md transition active:scale-95">Zaloguj</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- USTAWIENIA -->
+  <div id="settingsModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-6 md:p-8 max-w-xl w-full max-h-[90vh] shadow-2xl space-y-4 flex flex-col border border-slate-200 dark:border-slate-800">
+      <div class="flex items-center justify-between border-b pb-3 flex-shrink-0">
+        <div><h3 class="text-xl font-bold text-slate-800">Ustawienia & Baza Online</h3><p class="text-xs text-slate-500">Zarządzanie połączeniem z Arkuszami Google</p></div>
+        <button onclick="closeSettingsModal()" class="text-slate-400 hover:text-slate-600 p-2"><i class="fas fa-times text-lg"></i></button>
+      </div>
+      <div class="overflow-y-auto space-y-4 pr-1 flex-1 text-xs">
+        <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
+          <label class="block font-bold uppercase text-slate-700">1. Link do Arkusza LEKCJI (Baza Danych):</label>
+          <input type="url" id="lessonsSheetInput" class="w-full bg-white border border-slate-300 p-2.5 rounded-xl font-bold text-slate-800" placeholder="Wklej link do Arkusza 1...">
+        </div>
+        <div class="p-4 bg-blue-50/70 border border-blue-200 rounded-2xl space-y-2">
+          <label class="block font-bold uppercase text-[#008be5]">2. Link do Arkusza TEKSTÓW (Konfiguracja):</label>
+          <input type="url" id="configSheetInput" class="w-full bg-white border border-slate-300 p-2.5 rounded-xl font-bold text-slate-800" placeholder="Wklej link do Arkusza 2...">
+        </div>
+
+        <button onclick="saveSheetLinks()" class="w-full bg-[#008be5] hover:bg-blue-600 text-white font-black py-3 rounded-xl transition shadow-sm">
+          ZAPISZ USTAWIENIA I SYNCHRONIZUJ
+        </button>
+
+        <!-- PRZYCISK POBIERANIA GOTOWEGO PLIKU HTML NA KOMPUTER -->
+        <div class="p-4 bg-purple-50 border border-purple-200 rounded-2xl space-y-2">
+          <span class="font-bold text-purple-900 block uppercase">Eksport gotowego pliku na serwer / inne tablety:</span>
+          <p class="text-[11px] text-purple-700">Pobiera gotowy plik <b>planeta_koderow.html</b> z wpisanymi na stałe powyższymi linkami do arkuszy.</p>
+          <button onclick="downloadCompleteHtmlFile()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-black py-3 rounded-xl transition shadow flex items-center justify-center gap-2">
+            <i class="fas fa-file-arrow-down text-sm"></i>
+            <span>POBIERZ GOTOWY PLIK .HTML NA KOMPUTER</span>
+          </button>
+        </div>
+
+        <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between gap-3">
+          <div><span class="font-bold text-slate-700">PIN Instruktora:</span><p class="text-[11px] text-slate-500">Domyślny: 1234</p></div>
+          <div class="flex gap-2">
+            <input type="password" id="newPinInput" maxlength="6" class="w-28 p-2 bg-white border rounded-lg font-bold text-slate-800" placeholder="Nowy PIN">
+            <button onclick="changePin()" class="bg-slate-800 text-white px-3 py-2 rounded-lg font-bold">Zmień</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIGHTBOX -->
+  <div id="imageModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4" onclick="closeImageModal()">
+    <div class="relative max-w-5xl w-full max-h-[92vh] flex flex-col items-center bg-white dark:bg-pkDarkCard p-3 rounded-3xl shadow-2xl" onclick="event.stopPropagation()">
+      <img id="modalImg" src="" referrerpolicy="no-referrer" class="max-w-full max-h-[80vh] rounded-2xl object-contain">
+      <p id="modalCaption" class="text-slate-800 dark:text-slate-200 text-sm mt-2 font-bold text-center"></p>
+      <button onclick="closeImageModal()" class="absolute -top-3 -right-3 text-white bg-slate-900 w-9 h-9 rounded-full flex items-center justify-center shadow-lg"><i class="fas fa-times text-sm"></i></button>
+    </div>
+  </div>
+
+<script>
+    // =========================================================================
+    // WKLEJ TUTAJ ADRESY URL SWOICH DWÓCH ARKUSZY GOOGLE:
+    // =========================================================================
+    const PERMANENT_LESSONS_SHEET = "https://docs.google.com/spreadsheets/d/1ZLcFn7XCz0mMlh14A0mAbAsjFO9Lc9TxeGAY3Ks7jco/edit?usp=drive_link"; 
+    const PERMANENT_CONFIG_SHEET = "https://docs.google.com/spreadsheets/d/1gTH5ssqQF7cxFhIwO1vhic4BfA04PI5UJXv-U1s1Skc/edit?usp=drive_link";
+    // =========================================================================
+
+    try {
+      if (window.pdfjsLib) {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      }
+    } catch(e) {}
+
+    function escapeJsStr(str) {
+      if (!str) return "";
+      return String(str).replace(/\\/g, "\\\\").replace(/'/g, "\\'").replace(/"/g, "&quot;").replace(/\n/g, " ").replace(/\r/g, "");
+    }
+
+    function safeGetStorage(key, fallback) {
+      try { const item = localStorage.getItem(key); return item ? JSON.parse(item) : fallback; } catch (e) { return fallback; }
+    }
+
+    function safeSetStorage(key, val) {
+      try { localStorage.setItem(key, val); } catch (e) {}
+    }
+
+    function formatPolishLessonsCount(count) {
+      if (count === 1) return "1 lekcja";
+      const m10 = count % 10, m100 = count % 100;
+      return (m10 >= 2 && m10 <= 4 && !(m100 >= 12 && m100 <= 14)) ? `${count} lekcje` : `${count} lekcji`;
+    }
+
+    const FIXED_GROUP_DATA = {
+      1: { kit: "SPIKE Essential", age: "6 - 7 lat" },
+      2: { kit: "SPIKE Essential", age: "7 - 8 lat" },
+      3: { kit: "SPIKE Prime", age: "9 - 11 lat" },
+      4: { kit: "SPIKE Prime", age: "11 - 15 lat" },
+      5: { kit: "SPIKE Prime", age: "11 - 18 lat" }
+    };
+
+    const DB_NAME = 'PlanetaKoderowOfflineDB', STORE_NAME = 'offline_files';
+    const memoryBlobCache = new Map();
+    let activeObjectUrls = [];
+
+    function revokeActiveObjectUrls() {
+      activeObjectUrls.forEach(u => { try { URL.revokeObjectURL(u); } catch (e) {} });
+      activeObjectUrls = [];
+    }
+
+    function openOfflineDB() {
+      return new Promise((resolve, reject) => {
+        try {
+          if (!window.indexedDB) return reject(new Error("Brak IndexedDB"));
+          const req = indexedDB.open(DB_NAME, 1);
+          req.onupgradeneeded = (e) => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME);
+          };
+          req.onsuccess = () => resolve(req.result);
+          req.onerror = () => reject(req.error);
+        } catch(err) { reject(err); }
+      });
+    }
+
+    async function saveFileToOffline(url, blob) {
+      if (!url || !blob) return false;
+      memoryBlobCache.set(url, blob);
+      try {
+        const db = await openOfflineDB();
+        return new Promise((res) => {
+          const tx = db.transaction(STORE_NAME, 'readwrite');
+          tx.objectStore(STORE_NAME).put(blob, url);
+          tx.oncomplete = () => res(true);
+          tx.onerror = () => res(false);
+        });
+      } catch (e) { return true; }
+    }
+
+    async function getFileFromOffline(url) {
+      if (!url) return null;
+      if (memoryBlobCache.has(url)) return memoryBlobCache.get(url);
+      try {
+        const db = await openOfflineDB();
+        return new Promise((res) => {
+          const tx = db.transaction(STORE_NAME, 'readonly');
+          const req = tx.objectStore(STORE_NAME).get(url);
+          req.onsuccess = () => {
+            if (req.result) memoryBlobCache.set(url, req.result);
+            res(req.result || null);
+          };
+          req.onerror = () => res(null);
+        });
+      } catch(e) { return null; }
+    }
+
+    function normalizeUrlForFetch(url) {
+      if (!url) return "";
+      url = String(url).trim();
+      if (window.location.protocol.startsWith('http') && window.location.hostname.includes('planetakoderow.pl') && url.includes('planetakoderow.pl')) {
+        return url.replace(/^https?:\/\/(www\.)?planetakoderow\.pl/, window.location.origin);
+      }
+      return url;
+    }
+
+    // Pobieranie plików binarnych (PDF/PNG) przez XHR z obsługą APK (file://)
+    function xhrFetchBlob(url, timeoutMs = 12000) {
+      return new Promise((resolve) => {
+        try {
+          const xhr = new XMLHttpRequest();
+          xhr.open('GET', url, true);
+          xhr.responseType = 'blob';
+          xhr.timeout = timeoutMs;
+          xhr.onload = () => {
+            if ((xhr.status >= 200 && xhr.status < 300) || (xhr.status === 0 && xhr.response && xhr.response.size > 100)) {
+              resolve(xhr.response);
+            } else {
+              resolve(null);
+            }
+          };
+          xhr.onerror = () => resolve(null);
+          xhr.ontimeout = () => resolve(null);
+          xhr.send();
+        } catch (e) { resolve(null); }
+      });
+    }
+
+    async function fetchBlobSmart(rawUrl) {
+      const normalized = normalizeUrlForFetch(rawUrl);
+      const driveMatch = rawUrl.match(/\/d\/([a-zA-Z0-9_-]+)/) || rawUrl.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+      
+      const candidates = [];
+      if (driveMatch && driveMatch[1] && rawUrl.toLowerCase().includes('pdf')) {
+        const driveDl = `https://drive.usercontent.google.com/download?id=${driveMatch[1]}&export=download&authuser=0`;
+        candidates.push(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(driveDl)}`);
+        candidates.push(`https://corsproxy.io/?${encodeURIComponent(driveDl)}`);
+      }
+      candidates.push(normalized);
+      candidates.push(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(normalized)}`);
+      candidates.push(`https://corsproxy.io/?${encodeURIComponent(normalized)}`);
+      candidates.push(`https://api.allorigins.win/raw?url=${encodeURIComponent(normalized)}`);
+
+      for (const candidateUrl of candidates) {
+        const blob = await xhrFetchBlob(candidateUrl);
+        if (blob && blob.size > 150) return blob;
+      }
+      return null;
+    }
+
+    async function hydrateOfflineImages() {
+      const imgs = document.querySelectorAll('img[data-offline-src]');
+      for (const img of imgs) {
+        const rawUrl = img.getAttribute('data-offline-src');
+        if (!rawUrl) continue;
+        const blob = (await getFileFromOffline(rawUrl)) || (await getFileFromOffline(normalizeUrlForFetch(rawUrl)));
+        if (blob && blob.size > 0) {
+          const objUrl = URL.createObjectURL(blob);
+          activeObjectUrls.push(objUrl);
+          img.src = objUrl;
+        }
+      }
+    }
+
+    // --- CZYTNIK PDF OFFLINE WEWNĄTRZ APLIKACJI ---
+    let currentPdfDoc = null, currentPdfPage = 1, currentPdfTotalPages = 1, isRenderingPdf = false;
+
+    async function loadPdfIntoViewer(rawUrl) {
+      const statusBox = document.getElementById('inAppPdfStatus');
+      const canvas = document.getElementById('inAppPdfCanvas');
+      const fallbackBox = document.getElementById('inAppPdfFallback');
+      if (!rawUrl || !canvas) return;
+
+      currentPdfDoc = null; currentPdfPage = 1; currentPdfTotalPages = 1;
+      if (statusBox) {
+        statusBox.classList.remove('hidden');
+        statusBox.innerHTML = `<i class="fas fa-spinner fa-spin text-2xl text-[#008be5] mb-2"></i><span class="text-xs font-bold">Wczytywanie instrukcji...</span>`;
+      }
+
+      try {
+        const normalized = normalizeUrlForFetch(rawUrl);
+        let blob = (await getFileFromOffline(rawUrl)) || (await getFileFromOffline(normalized));
+
+        if (!blob || blob.size === 0) {
+          blob = await fetchBlobSmart(rawUrl);
+          if (blob && blob.size > 0) {
+            await saveFileToOffline(rawUrl, blob);
+            await saveFileToOffline(normalized, blob);
+          }
+        }
+
+        if (blob && blob.size > 0) {
+          const arrayBuffer = await blob.arrayBuffer();
+          currentPdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        } else {
+          currentPdfDoc = await pdfjsLib.getDocument(normalized).promise;
+        }
+
+        currentPdfTotalPages = currentPdfDoc.numPages;
+        if (statusBox) statusBox.classList.add('hidden');
+        if (fallbackBox) fallbackBox.classList.add('hidden');
+        canvas.classList.remove('hidden');
+        await renderPdfPageToCanvas(1);
+      } catch (err) {
+        if (statusBox) statusBox.classList.add('hidden');
+        canvas.classList.add('hidden');
+        const driveMatch = rawUrl.match(/\/d\/([a-zA-Z0-9_-]+)/) || rawUrl.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+        if (fallbackBox) {
+          fallbackBox.classList.remove('hidden');
+          fallbackBox.src = (driveMatch && driveMatch[1])
+            ? `https://drive.google.com/file/d/${driveMatch[1]}/preview`
+            : `https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(rawUrl)}`;
+        }
+      }
+    }
+
+    async function renderPdfPageToCanvas(pageNum) {
+      if (!currentPdfDoc || isRenderingPdf) return;
+      isRenderingPdf = true;
+      try {
+        const page = await currentPdfDoc.getPage(pageNum);
+        const viewport = page.getViewport({ scale: 1.8 });
+
+        const inAppCanvas = document.getElementById('inAppPdfCanvas');
+        if (inAppCanvas) {
+          inAppCanvas.height = viewport.height; inAppCanvas.width = viewport.width;
+          await page.render({ canvasContext: inAppCanvas.getContext('2d'), viewport }).promise;
+        }
+
+        const fsModal = document.getElementById('pdfFullscreenModal');
+        const fsCanvas = document.getElementById('fsPdfCanvas');
+        if (fsModal && !fsModal.classList.contains('hidden') && fsCanvas) {
+          fsCanvas.height = viewport.height; fsCanvas.width = viewport.width;
+          await page.render({ canvasContext: fsCanvas.getContext('2d'), viewport }).promise;
+        }
+
+        const label = `Strona ${pageNum} / ${currentPdfTotalPages}`;
+        const ind1 = document.getElementById('inAppPdfPageIndicator');
+        const ind2 = document.getElementById('fsPdfPageIndicator');
+        if (ind1) ind1.innerText = label;
+        if (ind2) ind2.innerText = label;
+      } catch (e) {} finally { isRenderingPdf = false; }
+    }
+
+    function changePdfPage(delta) {
+      if (!currentPdfDoc) return;
+      const next = currentPdfPage + delta;
+      if (next >= 1 && next <= currentPdfTotalPages) {
+        currentPdfPage = next;
+        renderPdfPageToCanvas(currentPdfPage);
+      }
+    }
+
+    function openPdfFullscreen(url, title) {
+      document.getElementById('fsPdfTitle').innerText = title || "Instrukcja budowania";
+      const m = document.getElementById('pdfFullscreenModal');
+      const fsCanvas = document.getElementById('fsPdfCanvas');
+      const fsFallback = document.getElementById('fsPdfFallbackIframe');
+      const fsControls = document.getElementById('fsPdfControls');
+
+      m.classList.remove('hidden'); m.classList.add('flex');
+      if (currentPdfDoc) {
+        fsCanvas.classList.remove('hidden'); fsFallback.classList.add('hidden'); fsControls.classList.remove('hidden');
+        renderPdfPageToCanvas(currentPdfPage);
+      } else {
+        fsCanvas.classList.add('hidden'); fsFallback.classList.remove('hidden'); fsControls.classList.add('hidden');
+        const inAppFallback = document.getElementById('inAppPdfFallback');
+        fsFallback.src = (inAppFallback && inAppFallback.src) ? inAppFallback.src : url;
+      }
+    }
+
+    function closePdfFullscreen() {
+      const m = document.getElementById('pdfFullscreenModal');
+      m.classList.add('hidden'); m.classList.remove('flex');
+      document.getElementById('fsPdfFallbackIframe').src = "";
+    }
+
+    const LOGO_SVG = `<svg viewBox="0 0 460 90" class="h-8 md:h-10 w-auto"><path d="M 76 13 Q 78 7 80 13 Q 86 15 80 17 Q 78 23 76 17 Q 70 15 76 13 Z" fill="#008be5" /><path d="M 88 23 Q 89.5 19 91 23 Q 95 24.5 91 26 Q 89.5 30 88 26 Q 84 24.5 88 23 Z" fill="#008be5" /><text x="0" y="66" font-family="'Poppins', sans-serif" font-weight="700" font-size="56" fill="#008be5" letter-spacing="-1.2">planeta</text><text x="216" y="66" font-family="'Poppins', sans-serif" font-weight="700" font-size="56" fill="currentColor" class="text-[#2b2928] dark:text-white" letter-spacing="-1.2">koderów</text></svg>`;
+    if (document.getElementById('brandLogo')) document.getElementById('brandLogo').innerHTML = LOGO_SVG;
+    if (document.getElementById('splashLogo')) document.getElementById('splashLogo').innerHTML = LOGO_SVG;
+
+    const EMPTY_LESSON_LEGO_SVG = `<div class="w-full h-full bg-[#f8fafc] dark:bg-slate-900 flex items-center justify-center select-none"><svg viewBox="0 0 120 120" class="w-16 h-16 opacity-30 dark:opacity-20"><polygon points="60,35 88,51 60,67 32,51" fill="#cbd5e1" /><polygon points="32,51 60,67 60,95 32,79" fill="#94a3b8" /><polygon points="60,67 88,51 88,79 60,95" fill="#64748b" /><ellipse cx="48" cy="46" rx="5" ry="2.8" fill="#e2e8f0" /><ellipse cx="60" cy="39" rx="5" ry="2.8" fill="#e2e8f0" /><ellipse cx="72" cy="46" rx="5" ry="2.8" fill="#e2e8f0" /><ellipse cx="60" cy="53" rx="5" ry="2.8" fill="#e2e8f0" /></svg></div>`;
+
+    const INITIAL_CONFIG_DATA = {
+      tytul_glowny: "Wybierz swoją grupę",
+      podtytul_glowny: "Dotknij swój kurs, aby przejść do dzisiejszych zadań.",
+      przycisk_spike: "OTWÓRZ LEGO SPIKE",
+      czcionka: "Inter",
+      tlo_url: "",
+      tlo_przyciemnienie: "40",
+      groups: [
+        { id: 1, name: "LEGO® ODKRYWCY", cleanName: "ODKRYWCY", age: "6 - 7 lat", lessonsCount: "0 lekcji" },
+        { id: 2, name: "LEGO® KONSTRUKTORZY", cleanName: "KONSTRUKTORZY", age: "7 - 8 lat", lessonsCount: "0 lekcji" },
+        { id: 3, name: "LEGO® TWÓRCY", cleanName: "TWÓRCY", age: "9 - 11 lat", lessonsCount: "0 lekcji" },
+        { id: 4, name: "LEGO® PROJEKTANCI", cleanName: "PROJEKTANCI", age: "11 - 15 lat", lessonsCount: "0 lekcji" },
+        { id: 5, name: "LEGO® REPREZENTACJA", cleanName: "REPREZENTACJA", age: "11 - 18 lat", lessonsCount: "0 lekcji" }
+      ]
+    };
+
+    let APP_CONFIG = safeGetStorage('pk_app_config', INITIAL_CONFIG_DATA);
+    let lessons = safeGetStorage('pk_lessons_cache', []);
+    let completedTasksMap = {};
+    try { localStorage.removeItem('pk_completed_tasks'); } catch(e) {}
+
+    const CARD_STYLES = [
+      { id: 1, bgGradient: "bg-gradient-to-b from-[#0088ff] to-[#0062cc]", icon: "fa-regular fa-lightbulb", arrowColor: "text-[#0088ff]" },
+      { id: 2, bgGradient: "bg-gradient-to-b from-[#00c57d] to-[#00945e]", icon: "fa-solid fa-gear", arrowColor: "text-[#00c57d]" },
+      { id: 3, bgGradient: "bg-gradient-to-b from-[#f59e0b] to-[#c97400]", icon: "fa-regular fa-star", arrowColor: "text-[#c97400]" },
+      { id: 4, bgGradient: "bg-gradient-to-b from-[#8a3ffc] to-[#6318c4]", icon: "fa-solid fa-pen-ruler", arrowColor: "text-[#8a3ffc]" },
+      { id: 5, bgGradient: "bg-gradient-to-b from-[#ff3b5c] to-[#d41334]", icon: "fa-solid fa-trophy", arrowColor: "text-[#ff3b5c]" }
+    ];
+
+    let LESSONS_SHEET_LINK = localStorage.getItem('pk_lessons_sheet_link') || PERMANENT_LESSONS_SHEET || "";
+    let CONFIG_SHEET_LINK = localStorage.getItem('pk_config_sheet_link') || PERMANENT_CONFIG_SHEET || "";
+    let ADMIN_PIN = localStorage.getItem('pk_admin_pin') || "1234";
+
+    let currentGroupId = null, currentHubType = null, currentCategoryFilter = 'all', currentLesson = null, activeTabName = "misja", activeMediaIndex = 0, isSyncing = false;
+
+    function initTheme() {
+      const savedTheme = localStorage.getItem('pk_theme') || 'dark';
+      document.documentElement.classList.toggle('dark', savedTheme === 'dark');
+      const icon = document.getElementById('themeIcon');
+      if (icon) icon.className = (savedTheme === 'dark') ? "fas fa-sun" : "fas fa-moon";
+    }
+
+    function toggleDarkMode() {
+      const isDark = document.documentElement.classList.toggle('dark');
+      safeSetStorage('pk_theme', isDark ? 'dark' : 'light');
+      document.getElementById('themeIcon').className = isDark ? "fas fa-sun" : "fas fa-moon";
+    }
+
+    function toggleTaskCompleted(lessonId, taskIdx, totalTasks) {
+      const key = `${lessonId}_t_${taskIdx}`;
+      const isNowDone = !completedTasksMap[key];
+      if (isNowDone) {
+        completedTasksMap[key] = true;
+        if (typeof confetti === 'function') { try { confetti({ particleCount: 75, spread: 70, origin: { y: 0.65 } }); } catch (e) {} }
+      } else {
+        delete completedTasksMap[key];
+      }
+
+      const cardElem = document.getElementById(`taskCard-${taskIdx}`);
+      const badgeElem = document.getElementById(`taskBadge-${taskIdx}`);
+      const titleElem = document.getElementById(`taskTitle-${taskIdx}`);
+      const btnElem = document.getElementById(`taskBtn-${taskIdx}`);
+
+      if (cardElem && badgeElem && titleElem && btnElem) {
+        if (isNowDone) {
+          cardElem.className = "bg-emerald-50/70 dark:bg-emerald-950/25 border-2 border-emerald-500 rounded-3xl p-6 shadow-sm flex flex-col md:flex-row items-start justify-between gap-5 transition-all duration-300";
+          badgeElem.className = "w-7 h-7 rounded-xl bg-emerald-500 text-white font-black text-xs flex items-center justify-center shadow-sm transition-colors";
+          badgeElem.innerHTML = `<i class="fas fa-check"></i>`;
+          titleElem.className = "text-lg font-black text-emerald-800 dark:text-emerald-300 line-through transition-colors";
+          btnElem.className = "mt-3 px-5 py-2.5 rounded-xl font-black text-xs flex items-center gap-2 transition active:scale-95 bg-emerald-500 text-white shadow-md shadow-emerald-500/20";
+          btnElem.innerHTML = `<i class="fas fa-circle-check text-sm"></i><span>Zrobione! Brawo!</span>`;
+        } else {
+          cardElem.className = "bg-white dark:bg-pkDarkCard border-2 border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm flex flex-col md:flex-row items-start justify-between gap-5 transition-all duration-300";
+          badgeElem.className = "w-7 h-7 rounded-xl bg-amber-500 text-slate-950 font-black text-xs flex items-center justify-center shadow-sm transition-colors";
+          badgeElem.innerHTML = `${taskIdx + 1}`;
+          titleElem.className = "text-lg font-black text-slate-900 dark:text-white transition-colors";
+          btnElem.className = "mt-3 px-5 py-2.5 rounded-xl font-black text-xs flex items-center gap-2 transition active:scale-95 bg-slate-100 dark:bg-slate-800 hover:bg-emerald-500 hover:text-white text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700";
+          btnElem.innerHTML = `<i class="far fa-circle-check text-sm"></i><span>Oznacz jako zrobione</span>`;
+        }
+      }
+
+      let doneCount = 0;
+      for (let i = 0; i < totalTasks; i++) { if (completedTasksMap[`${lessonId}_t_${i}`]) doneCount++; }
+      const counterElem = document.getElementById('tasksProgressCounter');
+      if (counterElem) counterElem.innerText = `Ukończono: ${doneCount} / ${totalTasks}`;
+    }
+
+    // --- KULOODPORNY PARSER CSV ORAZ POBIERANIE ARKUSZA DLA APK (file://) ---
+    function parseCSVToRows(csvText) {
+      const rows = [];
+      let row = [], cur = "", inQuotes = false;
+      for (let i = 0; i < csvText.length; i++) {
+        const ch = csvText[i], next = csvText[i + 1];
+        if (inQuotes) {
+          if (ch === '"' && next === '"') { cur += '"'; i++; }
+          else if (ch === '"') { inQuotes = false; }
+          else { cur += ch; }
+        } else {
+          if (ch === '"') { inQuotes = true; }
+          else if (ch === ',') { row.push(cur); cur = ""; }
+          else if (ch === '\n' || (ch === '\r' && next === '\n')) {
+            if (ch === '\r') i++;
+            row.push(cur); rows.push(row); row = []; cur = "";
+          } else if (ch !== '\r') { cur += ch; }
+        }
+      }
+      if (cur.length > 0 || row.length > 0) { row.push(cur); rows.push(row); }
+      return rows;
+    }
+
+    function xhrGetText(url, timeoutMs = 8000) {
+      return new Promise((resolve) => {
+        try {
+          const xhr = new XMLHttpRequest();
+          xhr.open('GET', url, true);
+          xhr.timeout = timeoutMs;
+          xhr.onload = () => {
+            if ((xhr.status >= 200 && xhr.status < 300) || (xhr.status === 0 && xhr.responseText)) {
+              resolve(xhr.responseText);
+            } else {
+              resolve(null);
+            }
+          };
+          xhr.onerror = () => resolve(null);
+          xhr.ontimeout = () => resolve(null);
+          xhr.send();
+        } catch (e) { resolve(null); }
+      });
+    }
+
+    async function fetchSheetMatrixSmart(sheetUrl) {
+      if (!sheetUrl) return null;
+      const m = sheetUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);
+      if (!m || !m[1]) return null;
+      const sheetId = m[1];
+      const gidMatch = sheetUrl.match(/[?&#]gid=([0-9]+)/);
+      const gidParam = (gidMatch && gidMatch[1]) ? `&gid=${gidMatch[1]}` : "";
+
+      const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv${gidParam}&t=${Date.now()}`;
+      const gvizCsvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv${gidParam}&t=${Date.now()}`;
+
+      // Lista 5 niezależnych kanałów pobierania (działa nawet przy ścisłej blokadzie ORB/CORS w APK)
+      const endpoints = [
+        csvUrl,
+        gvizCsvUrl,
+        `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(csvUrl)}`,
+        `https://corsproxy.io/?${encodeURIComponent(csvUrl)}`,
+        `https://api.allorigins.win/raw?url=${encodeURIComponent(csvUrl)}`
+      ];
+
+      for (const ep of endpoints) {
+        const text = await xhrGetText(ep, 7500);
+        if (text && text.length > 10 && !text.trim().startsWith('<!DOCTYPE') && !text.trim().startsWith('<html')) {
+          const matrix = parseCSVToRows(text);
+          if (matrix && matrix.length > 0) return matrix;
+        }
+      }
+      return null;
+    }
+
+    function parseConfigMatrix(matrix) {
+      if (!matrix || matrix.length === 0) return false;
+      matrix.forEach(r => {
+        if (!r || r.length < 2) return;
+        const key = String(r[0] || "").trim().toLowerCase();
+        const val = String(r[1] || "").trim();
+        if (!key || !val) return;
+        if (key === 'czcionka') APP_CONFIG.czcionka = val;
+        if (key === 'tlo_url') APP_CONFIG.tlo_url = fixGoogleDriveUrl(val, false);
+        if (key === 'tlo_przyciemnienie') APP_CONFIG.tlo_przyciemnienie = val;
+        if (key === 'tytul_glowny') APP_CONFIG.tytul_glowny = val;
+        if (key === 'podtytul_glowny') APP_CONFIG.podtytul_glowny = val;
+        if (key === 'przycisk_spike') APP_CONFIG.przycisk_spike = val;
+        for (let g = 1; g <= 5; g++) {
+          if (key === `g${g}_nazwa`) { APP_CONFIG.groups[g-1].name = val; APP_CONFIG.groups[g-1].cleanName = val.replace("LEGO® ", "").trim(); }
+          if (key === `g${g}_wiek`) { APP_CONFIG.groups[g-1].age = val; FIXED_GROUP_DATA[g].age = val; }
+          if (key === `g${g}_licznik`) APP_CONFIG.groups[g-1].lessonsCount = val;
+        }
+      });
+      safeSetStorage('pk_app_config', JSON.stringify(APP_CONFIG));
+      return true;
+    }
+
+    function parseLessonsMatrix(matrix) {
+      if (!matrix || matrix.length === 0) return false;
+      let headers = [], startRowIdx = 0;
+      const firstRowVals = matrix[0].map(cell => String(cell || "").toLowerCase().trim());
+      if (firstRowVals.some(v => v.includes('title') || v.includes('group') || v.includes('task') || v.includes('tytuł'))) {
+        headers = firstRowVals;
+        startRowIdx = 1;
+      }
+
+      function getCol(names, defaultIdx) {
+        for (const n of names) { const idx = headers.findIndex(h => h && h.includes(n)); if (idx !== -1) return idx; }
+        return defaultIdx;
+      }
+
+      const colGroup = getCol(['group'], 0), colTitle = getCol(['title', 'tytuł'], 1), colSub = getCol(['sub', 'podtytuł'], 2);
+      const colCategory = getCol(['category', 'kategoria', 'kat', 'dzial'], 2), colMissionTitle = getCol(['missiontitle', 'misjatytul'], 3);
+      const colMissionDesc = getCol(['missiondesc', 'misjaopis'], 4), colImg = getCol(['image', 'img', 'zdj'], 5);
+      const colPdf = getCol(['pdf', 'budow'], 6), colVideo = getCol(['video', 'film'], 7), colScratch = getCol(['scratchimg', 'scratch'], 8);
+      const colTip = getCol(['scratchtip', 'tip'], 9), colChallenge = getCol(['extrachallenge', 'challenge', 'wyzwan'], 10);
+      const colChallImg = getCol(['challengeimg', 'wyzwanie_zdj'], 11), colStatus = getCol(['status', 'dostep'], 12);
+      const colT1Title = getCol(['task1_title', 'zadanie1_tytul'], 15), colT1Desc = getCol(['task1_desc', 'zadanie1_opis'], 16), colT1Img = getCol(['task1_img', 'zadanie1_zdj'], 17);
+      const colT2Title = getCol(['task2_title', 'zadanie2_tytul'], 18), colT2Desc = getCol(['task2_desc', 'zadanie2_opis'], 19), colT2Img = getCol(['task2_img', 'zadanie2_zdj'], 20);
+      const colT3Title = getCol(['task3_title', 'zadanie3_tytul'], 21), colT3Desc = getCol(['task3_desc', 'zadanie3_opis'], 22), colT3Img = getCol(['task3_img', 'zadanie3_zdj'], 23);
+
+      const parsed = [];
+      for (let i = startRowIdx; i < matrix.length; i++) {
+        const r = matrix[i];
+        if (!r || r.length === 0) continue;
+        const getVal = (idx) => (idx >= 0 && r[idx] !== undefined && r[idx] !== null) ? String(r[idx]).trim() : "";
+        const title = getVal(colTitle);
+        if (!title || getVal(colGroup).toLowerCase() === 'config') continue;
+
+        const rawGrp = getVal(colGroup).toLowerCase();
+        let grpId = rawGrp, fixedInfo = { kit: "SPIKE Essential", age: "Warsztaty" };
+        if (rawGrp.includes('wakac') || rawGrp.includes('feri') || rawGrp === '6') { grpId = 'wakacje'; fixedInfo = { kit: "Zestaw Warsztatowy", age: "Wakacje & Ferie" }; }
+        else if (rawGrp.includes('zawod') || rawGrp.includes('turniej') || rawGrp.includes('wro') || rawGrp === '7') { grpId = 'zawody'; fixedInfo = { kit: "SPIKE Prime / WRO", age: "Turnieje" }; }
+        else { grpId = parseInt(rawGrp) || 1; fixedInfo = FIXED_GROUP_DATA[grpId] || FIXED_GROUP_DATA[1]; }
+
+        const rawImgs = getVal(colImg);
+        const imagesArray = rawImgs ? rawImgs.split(',').map(u => fixGoogleDriveUrl(u.trim(), false)).filter(Boolean) : [];
+        const rawScratchImgs = getVal(colScratch);
+        const scratchArray = rawScratchImgs ? rawScratchImgs.split(',').map(u => fixGoogleDriveUrl(u.trim(), false)).filter(Boolean) : [];
+        const statusRaw = getVal(colStatus).toLowerCase();
+        const isLocked = (statusRaw === 'nie' || statusRaw === 'zablokowana' || statusRaw === '0');
+
+        const tasksList = [];
+        const t1Desc = getVal(colT1Desc) || getVal(colChallenge);
+        if (t1Desc) tasksList.push({ title: (getVal(colT1Title) || "Wyzwanie 1").replace(/\|\s*$/, '').trim(), desc: t1Desc, img: fixGoogleDriveUrl(getVal(colT1Img) || getVal(colChallImg), false) });
+        const t2Desc = getVal(colT2Desc);
+        if (t2Desc) tasksList.push({ title: (getVal(colT2Title) || "Wyzwanie 2").replace(/\|\s*$/, '').trim(), desc: t2Desc, img: fixGoogleDriveUrl(getVal(colT2Img), false) });
+        const t3Desc = (colT3Desc !== -1) ? getVal(colT3Desc) : "";
+        if (t3Desc) tasksList.push({ title: (getVal(colT3Title) || "Wyzwanie 3").replace(/\|\s*$/, '').trim(), desc: t3Desc, img: fixGoogleDriveUrl(getVal(colT3Img), false) });
+
+        const categoryName = getVal(colCategory) || getVal(colSub) || "Ogólne";
+        parsed.push({
+          id: "l_" + i, groupId: grpId, category: categoryName, title: title, subtitle: getVal(colSub),
+          kitType: fixedInfo.kit, age: fixedInfo.age, missionTitle: getVal(colMissionTitle) || title,
+          missionDesc: getVal(colMissionDesc) || getVal(colSub) || "Zbudujesz i zaprogramujesz model robota.",
+          image: imagesArray[0] || "", images: imagesArray, pdfUrl: getVal(colPdf) ? getVal(colPdf).trim() : "",
+          videoUrl: getVal(colVideo), scratchImg: scratchArray[0] || "", scratchImgs: scratchArray,
+          scratchTip: getVal(colTip), tasks: tasksList, status: statusRaw, isLocked: isLocked
+        });
+      }
+      if (parsed.length > 0) {
+        lessons = parsed;
+        safeSetStorage('pk_lessons_cache', JSON.stringify(lessons));
+        return true;
+      }
+      return false;
+    }
+
+    async function syncAllFromGoogle(autoDownloadOffline = true) {
+      if (isSyncing) return;
+      if (!LESSONS_SHEET_LINK && !CONFIG_SHEET_LINK) {
+        const statusText = document.getElementById('cloudStatusText');
+        const dot = document.getElementById('cloudDot');
+        if (statusText) statusText.innerText = "Wklej link w Ustawieniach";
+        if (dot) dot.className = "w-2.5 h-2.5 rounded-full bg-rose-500";
+        return;
+      }
+
+      isSyncing = true;
+      const statusText = document.getElementById('cloudStatusText');
+      const dot = document.getElementById('cloudDot');
+      const syncIcon = document.getElementById('syncIcon');
+      if (statusText) statusText.innerText = "Pobieram arkusz...";
+      if (dot) dot.className = "w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse";
+      if (syncIcon) syncIcon.classList.add('fa-spin');
+
+      let lessonsOk = false;
+
+      try {
+        const [cfgMatrix, lsnMatrix] = await Promise.all([
+          CONFIG_SHEET_LINK ? fetchSheetMatrixSmart(CONFIG_SHEET_LINK) : Promise.resolve(null),
+          LESSONS_SHEET_LINK ? fetchSheetMatrixSmart(LESSONS_SHEET_LINK) : Promise.resolve(null)
+        ]);
+
+        if (cfgMatrix) parseConfigMatrix(cfgMatrix);
+        if (lsnMatrix) lessonsOk = parseLessonsMatrix(lsnMatrix);
+
+        applyAppAppearance();
+
+        if (currentLesson) renderLesson(currentLesson.id);
+        else if (currentHubType) renderSpecialHub(currentHubType, currentCategoryFilter);
+        else if (currentGroupId) renderLessons(currentGroupId);
+        else renderGroups();
+
+        if (autoDownloadOffline && lessons.length > 0) {
+          await downloadAllMissingOffline(statusText);
+        }
+
+        if (lessonsOk || lessons.length > 0) {
+          if (statusText) statusText.innerText = `Gotowe (${lessons.length} lekcji)`;
+          if (dot) dot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
+        } else {
+          if (statusText) statusText.innerText = "Udostępnij arkusz dla każdego z linkiem";
+          if (dot) dot.className = "w-2.5 h-2.5 rounded-full bg-rose-500";
+        }
+      } catch (e) {
+        if (statusText) statusText.innerText = lessons.length > 0 ? `Offline (${lessons.length} lekcji)` : "Błąd połączenia";
+        if (dot) dot.className = "w-2.5 h-2.5 rounded-full bg-amber-500";
+      } finally {
+        if (syncIcon) syncIcon.classList.remove('fa-spin');
+        isSyncing = false;
+      }
+    }
+
+    function fixGoogleDriveUrl(url, isPdf = false) {
+      if (!url) return "";
+      url = String(url).trim();
+      const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+      if (match && match[1]) {
+        return isPdf ? `https://drive.google.com/file/d/${match[1]}/preview` : `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1000`;
+      }
+      return url;
+    }
+
+    function renderVideoPlayerHtml(videoUrl) {
+      if (!videoUrl) return "";
+      const driveMatch = videoUrl.match(/\/d\/([a-zA-Z0-9_-]+)/);
+      if (driveMatch && driveMatch[1]) return `<iframe src="https://drive.google.com/file/d/${driveMatch[1]}/preview" class="w-full h-full rounded-2xl" frameborder="0" allow="autoplay; fullscreen"></iframe>`;
+      if (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')) {
+        const m = videoUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
+        return `<iframe src="https://www.youtube.com/embed/${m ? m[1] : ''}" class="w-full h-full rounded-2xl" frameborder="0" allow="autoplay; fullscreen"></iframe>`;
+      }
+      return `<video controls class="w-full h-full object-contain rounded-2xl"><source src="${videoUrl}" type="video/mp4"></video>`;
+    }
+
+    // --- URUCHAMIANIE LEGO SPIKE 3 ---
+    function launchSpike() {
+      const pkg = "com.lego.education.spikenext";
+      // 1. Nasz własny natywny mostek z pliku APK!
+      if (typeof window.Android !== "undefined" && typeof window.Android.launchSpike === "function") {
+        window.Android.launchSpike(pkg);
+        return;
+      }
+      // 2. Rezerwowo dla Fully Kiosk
+      if (typeof window.fully !== "undefined" && typeof window.fully.startApplication === "function") {
+        window.fully.startApplication(pkg);
+        return;
+      }
+      window.location.href = "intent://#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;package=" + pkg + ";end";
+    }
+
+    function downloadCompleteHtmlFile() {
+      const lLink = (document.getElementById('lessonsSheetInput')?.value || LESSONS_SHEET_LINK || PERMANENT_LESSONS_SHEET).trim();
+      const cLink = (document.getElementById('configSheetInput')?.value || CONFIG_SHEET_LINK || PERMANENT_CONFIG_SHEET).trim();
+      let htmlSource = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+      htmlSource = htmlSource.replace(/const PERMANENT_LESSONS_SHEET = "[^"]*";/, `const PERMANENT_LESSONS_SHEET = "${lLink}";`);
+      htmlSource = htmlSource.replace(/const PERMANENT_CONFIG_SHEET = "[^"]*";/, `const PERMANENT_CONFIG_SHEET = "${cLink}";`);
+      const blob = new Blob([htmlSource], { type: 'text/html;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'index.html';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+    }
+
+    function applyAppAppearance() {
+      if (APP_CONFIG.czcionka) document.body.style.fontFamily = `'${APP_CONFIG.czcionka}', sans-serif`;
+      const body = document.getElementById('appBody'), overlay = document.getElementById('bgOverlay');
+      if (APP_CONFIG.tlo_url) {
+        body.style.backgroundImage = `url('${APP_CONFIG.tlo_url}')`; body.style.backgroundColor = '#000000';
+        overlay.classList.remove('hidden');
+        overlay.style.backgroundColor = `rgba(255, 255, 255, ${(parseInt(APP_CONFIG.tlo_przyciemnienie) || 40) / 100})`;
+      } else {
+        body.style.backgroundImage = 'none'; body.style.backgroundColor = ''; overlay.classList.add('hidden');
+      }
+    }
+
+    async function downloadAllMissingOffline(statusElem = null) {
+      const urlsToDownload = [];
+      lessons.forEach(l => {
+        if (l.pdfUrl) urlsToDownload.push(l.pdfUrl);
+        if (l.image) urlsToDownload.push(l.image);
+        if (l.images) l.images.forEach(img => urlsToDownload.push(img));
+        if (l.scratchImg) urlsToDownload.push(l.scratchImg);
+        if (l.scratchImgs) l.scratchImgs.forEach(s => urlsToDownload.push(s));
+        if (l.tasks) l.tasks.forEach(t => { if (t.img) urlsToDownload.push(t.img); });
+      });
+
+      const uniqueUrls = [...new Set(urlsToDownload.filter(Boolean))];
+      if (uniqueUrls.length === 0) return;
+
+      const total = uniqueUrls.length;
+      for (let i = 0; i < total; i++) {
+        const url = uniqueUrls[i];
+        if (statusElem) statusElem.innerText = `Pliki: ${i + 1}/${total}`;
+        const normalized = normalizeUrlForFetch(url);
+        const alreadyInCache = (await getFileFromOffline(url)) || (await getFileFromOffline(normalized));
+        if (alreadyInCache) continue;
+
+        try {
+          const blob = await fetchBlobSmart(url);
+          if (blob && blob.size > 0) {
+            await saveFileToOffline(url, blob);
+            await saveFileToOffline(normalized, blob);
+          }
+        } catch (err) {}
+      }
+    }
+
+    // ================= EKRAN 1: STRONA GŁÓWNA =================
+    function renderGroups() {
+      revokeActiveObjectUrls();
+      currentGroupId = null; currentHubType = null; currentLesson = null;
+      const app = document.getElementById('app');
+
+      let html = `
+        <div class="flex-1 flex flex-col justify-between py-2 space-y-6">
+          <div class="text-center flex-shrink-0">
+            <h2 class="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight font-heading leading-tight text-slate-900 dark:text-white">${APP_CONFIG.tytul_glowny}</h2>
+            <p class="text-slate-500 dark:text-slate-400 font-medium text-xs sm:text-sm md:text-base mt-2">${APP_CONFIG.podtytul_glowny}</p>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 sm:gap-4 min-h-[380px]">
+      `;
+
+      APP_CONFIG.groups.forEach((g, idx) => {
+        const style = CARD_STYLES[idx];
+        const categoryName = g.cleanName || g.name.replace("LEGO® ", "").trim();
+        const fixedInfo = FIXED_GROUP_DATA[g.id] || FIXED_GROUP_DATA[1];
+        const displayAge = g.age || fixedInfo.age;
+        const actualCount = lessons.filter(l => Number(l.groupId) === g.id).length;
+        const autoCountLabel = formatPolishLessonsCount(actualCount);
+
+        html += `
+          <div onclick="renderLessons(${g.id})" class="${style.bgGradient} rounded-[2rem] px-3.5 py-6 sm:px-4 sm:py-6 flex flex-col justify-between h-full min-h-[360px] cursor-pointer shadow-xl hover:-translate-y-1.5 active:scale-95 transition-all duration-200 relative overflow-hidden group">
+            <div class="absolute -top-10 -right-10 w-36 h-36 rounded-full border-4 border-white/20 floating-card-orb pointer-events-none"></div>
+            <div class="absolute top-1/2 -left-12 w-28 h-28 rounded-full bg-white/10 floating-card-orb-delayed pointer-events-none"></div>
+            <div class="flex items-start justify-between relative z-10">
+              <span class="bg-white text-slate-900 text-xs sm:text-sm font-black px-4 py-1.5 rounded-full shadow-md tracking-wide">${displayAge}</span>
+              <div class="text-xl sm:text-2xl text-white opacity-95"><i class="${style.icon}"></i></div>
+            </div>
+            <div class="my-auto py-2 relative z-10 w-full text-center px-1">
+              <span class="block text-xs sm:text-sm font-black text-white/90 uppercase tracking-widest mb-1">LEGO®</span>
+              <h3 class="font-black text-white leading-tight text-shadow-sm whitespace-nowrap" style="font-size: clamp(0.85rem, 1.15vw, 1.35rem); letter-spacing: -0.02em;">${categoryName}</h3>
+            </div>
+            <div class="pt-2 flex items-end justify-between relative z-10">
+              <span class="text-white text-xs sm:text-sm font-bold opacity-95">${autoCountLabel}</span>
+              <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white flex items-center justify-center shadow-lg group-hover:scale-105 transition flex-shrink-0"><i class="fas fa-arrow-right ${style.arrowColor} text-base sm:text-lg"></i></div>
+            </div>
+            <div class="absolute -bottom-8 -left-8 w-44 h-44 bg-white/10 rounded-full pointer-events-none"></div>
+          </div>
+        `;
+      });
+
+      html += `
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full pt-1">
+            <div onclick="renderSpecialHub('wakacje')" class="bg-gradient-to-r from-teal-600 via-cyan-600 to-blue-600 rounded-3xl p-5 md:p-6 text-white shadow-xl hover:-translate-y-1 active:scale-[0.99] transition duration-200 cursor-pointer flex items-center justify-between group border border-teal-400/40 relative overflow-hidden">
+              <div class="absolute -right-8 -top-8 w-32 h-32 bg-white/10 rounded-full pointer-events-none"></div>
+              <div class="relative z-10">
+                <span class="bg-black/25 text-teal-200 text-[10px] sm:text-xs font-black uppercase px-3 py-1 rounded-full tracking-wider">Warsztaty • Projekty specjalne</span>
+                <h3 class="text-xl sm:text-2xl font-black tracking-tight mt-1.5 font-heading">Wakacje i ferie zimowe</h3>
+                <p class="text-xs sm:text-sm text-teal-100 font-medium mt-0.5">Półkolonie, turnusy zimowe i wyzwania naukowe</p>
+              </div>
+              <div class="w-12 h-12 rounded-full bg-white text-teal-700 flex items-center justify-center text-lg shadow-lg group-hover:scale-110 transition flex-shrink-0 ml-3 relative z-10"><i class="fas fa-arrow-right"></i></div>
+            </div>
+
+            <div onclick="renderSpecialHub('zawody')" class="bg-gradient-to-r from-indigo-950 via-purple-900 to-slate-950 rounded-3xl p-5 md:p-6 text-white shadow-xl hover:-translate-y-1 active:scale-[0.99] transition duration-200 cursor-pointer flex items-center justify-between group border border-purple-500/40 relative overflow-hidden">
+              <div class="absolute -right-8 -top-8 w-32 h-32 bg-purple-500/10 rounded-full pointer-events-none"></div>
+              <div class="relative z-10">
+                <span class="bg-amber-400/20 text-amber-300 text-[10px] sm:text-xs font-black uppercase px-3 py-1 rounded-full tracking-wider border border-amber-400/30">WRO • Turnieje LEGO • Wyzwania</span>
+                <h3 class="text-xl sm:text-2xl font-black tracking-tight mt-1.5 font-heading">Strefa zawodów</h3>
+                <p class="text-xs sm:text-sm text-purple-200 font-medium mt-0.5">Przygotowanie do turniejów i konkurencje robotów</p>
+              </div>
+              <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-amber-400 to-yellow-300 text-slate-950 flex items-center justify-center text-lg shadow-lg group-hover:scale-110 transition flex-shrink-0 ml-3 relative z-10"><i class="fas fa-arrow-right"></i></div>
+            </div>
+          </div>
+          <div class="text-center text-[10px] sm:text-xs text-slate-400 font-medium pt-3 pb-1 flex-shrink-0">© Planeta Koderów. Wszelkie prawa zastrzeżone. Materiały chronione prawem autorskim.</div>
+        </div>
+      `;
+      app.innerHTML = html;
+    }
+
+    // ================= EKRAN 2A: WIDOK SPECJALNY =================
+    function renderSpecialHub(hubType, categoryFilter = 'all') {
+      revokeActiveObjectUrls();
+      currentHubType = hubType; currentGroupId = null; currentCategoryFilter = categoryFilter; currentLesson = null;
+      const app = document.getElementById('app');
+
+      const isZawody = (hubType === 'zawody');
+      const title = isZawody ? "Strefa zawodów" : "Wakacje i ferie zimowe";
+      const subtitle = isZawody ? "WRO • Turnieje LEGO • Wyzwania" : "Warsztaty • Projekty specjalne";
+      let hubLessons = lessons.filter(l => String(l.groupId).toLowerCase() === hubType);
+      const categories = [...new Set(hubLessons.map(l => l.category || l.subtitle || "Ogólne"))];
+
+      let html = `
+        <div class="max-w-7xl mx-auto w-full pt-1 pb-10 space-y-6">
+          <div class="flex items-center justify-between">
+            <button onclick="renderGroups()" class="text-xs md:text-sm font-bold text-slate-600 dark:text-slate-400 hover:text-[#008be5] flex items-center gap-2 transition"><i class="fas fa-arrow-left text-[#008be5]"></i> Wróć do strony głównej</button>
+            <span class="text-xs font-bold text-slate-400">Znaleziono: ${hubLessons.length} wyzwań</span>
+          </div>
+          <div class="bg-white dark:bg-pkDarkCard p-6 md:p-8 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center justify-between">
+            <div>
+              <span class="text-xs font-black uppercase text-[#008be5] tracking-widest">${subtitle}</span>
+              <h2 class="text-2xl md:text-3xl font-black text-slate-900 dark:text-white font-heading tracking-tight mt-1">${title}</h2>
+              <p class="text-xs md:text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">Wybierz kategorię i przejdź do instrukcji oraz zadań.</p>
+            </div>
+          </div>
+          ${categories.length > 1 ? `
+            <div class="flex items-center gap-2 overflow-x-auto pb-1 pt-1">
+              <button onclick="renderSpecialHub('${hubType}', 'all')" class="px-4 py-2 rounded-2xl text-xs font-black transition ${categoryFilter === 'all' ? 'bg-[#008be5] text-white shadow-md' : 'bg-white dark:bg-pkDarkCard text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-50'}">Wszystkie kategorie (${hubLessons.length})</button>
+              ${categories.map(cat => {
+                const count = hubLessons.filter(l => (l.category || l.subtitle || "Ogólne") === cat).length;
+                const isActive = (categoryFilter === cat);
+                return `<button onclick="renderSpecialHub('${hubType}', '${escapeJsStr(cat)}')" class="px-4 py-2 rounded-2xl text-xs font-black transition whitespace-nowrap ${isActive ? 'bg-[#008be5] text-white shadow-md' : 'bg-white dark:bg-pkDarkCard text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-50'}">${cat} (${count})</button>`;
+              }).join('')}
+            </div>
+          ` : ''}
+          <div class="space-y-8">
+      `;
+
+      if (hubLessons.length === 0) {
+        html += `
+          <div class="bg-white dark:bg-pkDarkCard p-12 rounded-3xl text-center text-slate-400 border border-slate-200 dark:border-slate-800">
+            <i class="fas fa-folder-open text-4xl mb-3 opacity-40"></i>
+            <h4 class="text-base font-bold text-slate-700 dark:text-slate-200">Brak dodanych lekcji w tej strefie</h4>
+            <p class="text-xs text-slate-500 mt-1">Wpisz w pierwszej kolumnie arkusza słowo <b>${hubType}</b>, aby przypisać tutaj zadania.</p>
+          </div>
+        `;
+      } else {
+        const displayCategories = (categoryFilter === 'all') ? categories : [categoryFilter];
+        displayCategories.forEach(cat => {
+          const catLessons = hubLessons.filter(l => (l.category || l.subtitle || "Ogólne") === cat);
+          if (catLessons.length === 0) return;
+          html += `
+            <div class="space-y-4">
+              <div class="flex items-center gap-3 border-b border-slate-200/80 dark:border-slate-800 pb-2">
+                <span class="w-3 h-3 rounded-full bg-[#008be5]"></span>
+                <h3 class="text-lg md:text-xl font-black text-slate-900 dark:text-white font-heading">${cat}</h3>
+                <span class="text-xs font-bold text-slate-400">(${catLessons.length})</span>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                ${catLessons.map((l, idx) => `
+                  <div onclick="openLessonDetails('${l.id}', ${l.isLocked}, this)" class="bg-white dark:bg-pkDarkCard rounded-3xl overflow-hidden shadow-sm flex flex-col justify-between transition-all duration-200 cursor-pointer border border-slate-200/80 dark:border-slate-800 hover:border-[#008be5] hover:shadow-xl hover:-translate-y-1 ${l.isLocked ? 'opacity-70 grayscale' : ''}">
+                    <div class="h-52 bg-white dark:bg-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
+                      ${l.image ? `<img src="${l.image}" data-offline-src="${l.image}" referrerpolicy="no-referrer" class="max-h-full max-w-full object-contain">` : EMPTY_LESSON_LEGO_SVG}
+                      <span class="absolute top-3 left-3 bg-slate-950 text-white text-xs font-black px-3.5 py-1.5 rounded-xl shadow-md border border-white/20">Zadanie ${idx + 1}</span>
+                      ${l.isLocked ? `<div class="absolute inset-0 bg-slate-900/65 backdrop-blur-[2px] flex flex-col items-center justify-center text-white p-3 text-center"><div class="lock-icon-elem w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-2xl mb-1.5 shadow transition-all duration-300">🔒</div><span class="lock-badge-elem font-black text-xs uppercase tracking-wider bg-black/60 px-3.5 py-1 rounded-full border border-white/20 transition-all duration-300">Zablokowana</span></div>` : ''}
+                    </div>
+                    <div class="p-5 flex-1 flex flex-col justify-between border-t border-slate-100 dark:border-slate-800/80">
+                      <div>
+                        <div class="flex items-center justify-between mb-1.5"><span class="text-xs font-bold text-[#008be5]">${l.subtitle || cat}</span></div>
+                        <h4 class="text-xl font-black text-slate-900 dark:text-white leading-snug">${l.title}</h4>
+                      </div>
+                      <div class="mt-5">
+                        ${l.isLocked ? `<div class="w-full py-2.5 px-4 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-400 font-bold text-xs flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-700"><i class="fas fa-lock"></i><span>Zablokowane przez trenera</span></div>` : `<button class="w-full py-2.5 px-4 rounded-xl text-xs font-black flex items-center justify-center gap-2 transition bg-[#008be5] text-white shadow-md hover:bg-blue-600"><span>Otwórz wyzwanie</span><i class="fas fa-arrow-right text-[11px]"></i></button>`}
+                      </div>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
+        });
+      }
+      html += `</div></div>`;
+      app.innerHTML = html;
+      hydrateOfflineImages();
+    }
+
+    // ================= EKRAN 2B: WYBÓR LEKCJI W GRUPACH =================
+    function renderLessons(groupId) {
+      revokeActiveObjectUrls();
+      currentGroupId = groupId; currentHubType = null; currentLesson = null;
+      const group = APP_CONFIG.groups.find(g => g.id === groupId) || APP_CONFIG.groups[0];
+      const fixedInfo = FIXED_GROUP_DATA[groupId] || FIXED_GROUP_DATA[1];
+      const displayAge = group.age || fixedInfo.age;
+      const app = document.getElementById('app');
+      const groupLessons = lessons.filter(l => Number(l.groupId) === groupId);
+
+      let html = `
+        <div class="max-w-7xl mx-auto w-full pt-1 pb-10 space-y-6">
+          <div class="flex items-center justify-between">
+            <button onclick="renderGroups()" class="text-xs md:text-sm font-bold text-slate-600 dark:text-slate-400 hover:text-[#008be5] flex items-center gap-2 transition"><i class="fas fa-arrow-left text-[#008be5]"></i> Wróć do wyboru grupy</button>
+            <span class="text-xs font-bold text-slate-400">Liczba lekcji: ${groupLessons.length}</span>
+          </div>
+          <div class="border-b border-slate-200/60 dark:border-slate-800 pb-4">
+            <h2 class="text-2xl md:text-3xl font-black text-slate-900 dark:text-white font-heading tracking-tight">${group.cleanName || group.name.replace("LEGO® ", "")} (${displayAge})</h2>
+          </div>
+      `;
+
+      if (groupLessons.length === 0) {
+        html += `
+          <div class="bg-white dark:bg-pkDarkCard p-12 rounded-3xl text-center text-slate-400 border border-slate-200 dark:border-slate-800 space-y-3">
+            <i class="fas fa-cloud-arrow-down text-4xl mb-1 text-[#008be5] opacity-80"></i>
+            <h4 class="text-base font-bold text-slate-700 dark:text-slate-200">Brak pobranych lekcji w grupie ${groupId}</h4>
+            <p class="text-xs text-slate-500 max-w-md mx-auto">Upewnij się, że w Ustawieniach wklejony jest link do Arkusza Google (udostępnionego jako „Każdy, kto ma link”), a następnie kliknij przycisk poniżej:</p>
+            <button onclick="syncAllFromGoogle(true)" class="bg-[#008be5] hover:bg-blue-600 text-white font-black text-xs px-6 py-3 rounded-xl shadow-md transition active:scale-95 inline-flex items-center gap-2">
+              <i class="fas fa-rotate"></i><span>POBIERZ LEKCJE Z ARKUSZA TERAZ</span>
+            </button>
+          </div>
+        `;
+      } else {
+        html += `<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">`;
+        groupLessons.forEach((l, idx) => {
+          const lessonNumber = idx + 1;
+          const hasImage = Boolean(l.image || (l.images && l.images.length > 0));
+          html += `
+            <div ${l.isLocked ? `onclick="handleLockedCardClick(this)"` : `onclick="renderLesson('${l.id}')"`} class="bg-white dark:bg-pkDarkCard border-2 border-slate-200/90 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm flex flex-col justify-between transition-all duration-200 relative ${l.isLocked ? 'grayscale opacity-75 cursor-not-allowed' : 'hover:border-[#008be5] hover:shadow-xl hover:-translate-y-1 cursor-pointer'}">
+              <div class="h-48 md:h-52 bg-slate-100 dark:bg-slate-900 relative overflow-hidden flex items-center justify-center">
+                ${hasImage ? `<img src="${l.image}" data-offline-src="${l.image}" referrerpolicy="no-referrer" class="max-h-full max-w-full object-contain">` : EMPTY_LESSON_LEGO_SVG}
+                <span class="absolute top-3 left-3 bg-slate-950 text-white text-xs font-black px-3.5 py-1.5 rounded-xl shadow-md border border-white/20">Lekcja ${lessonNumber}</span>
+                ${l.isLocked ? `<div class="absolute inset-0 bg-slate-900/65 backdrop-blur-[2px] flex flex-col items-center justify-center text-white p-3 text-center"><div class="lock-icon-elem w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-2xl mb-1.5 shadow transition-all duration-300">🔒</div><span class="lock-badge-elem font-black text-xs uppercase tracking-wider bg-black/60 px-3.5 py-1 rounded-full border border-white/20 transition-all duration-300">Zablokowana</span></div>` : ''}
+              </div>
+              <div class="p-5 flex-1 flex flex-col justify-between border-t border-slate-100 dark:border-slate-800/80">
+                <div>
+                  <div class="flex items-center justify-between mb-1.5"><span class="text-xs font-bold text-[#008be5]">${l.subtitle || 'Robotyka LEGO'}</span></div>
+                  <h4 class="text-xl font-black text-slate-900 dark:text-white leading-snug">${l.title}</h4>
+                </div>
+                <div class="mt-5">
+                  ${l.isLocked ? `<div class="w-full py-3 px-4 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 font-bold text-xs flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-700"><i class="fas fa-lock"></i><span>Zablokowane przez trenera</span></div>` : `<div class="w-full py-3 px-4 rounded-2xl bg-[#008be5] hover:bg-blue-600 text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition active:scale-98"><span>Rozpocznij misję</span><i class="fas fa-arrow-right text-xs"></i></div>`}
+                </div>
+              </div>
+            </div>
+          `;
+        });
+        html += `</div>`;
+      }
+      html += `</div>`;
+      app.innerHTML = html;
+      hydrateOfflineImages();
+    }
+
+    function openLessonDetails(lessonId, isLocked, cardElem) {
+      if (isLocked) { handleLockedCardClick(cardElem); return; }
+      renderLesson(lessonId);
+    }
+
+    function handleLockedCardClick(cardElem) {
+      if (!cardElem) return;
+      cardElem.classList.add('lock-wobble-anim');
+      setTimeout(() => cardElem.classList.remove('lock-wobble-anim'), 450);
+      const badge = cardElem.querySelector('.lock-badge-elem');
+      if (badge) {
+        badge.innerText = "🔒 Odblokuje trener!";
+        badge.classList.remove('bg-black/60'); badge.classList.add('bg-rose-600', 'text-white', 'shadow-lg');
+        setTimeout(() => {
+          badge.innerText = "Zablokowana";
+          badge.classList.remove('bg-rose-600', 'text-white', 'shadow-lg'); badge.classList.add('bg-black/60');
+        }, 1500);
+      }
+    }
+
+    // ================= EKRAN 3: KARTA LEKCJI =================
+    async function renderLesson(lessonId) {
+      revokeActiveObjectUrls();
+      let lesson = lessons.find(l => l.id === lessonId);
+      if (!lesson) {
+        if (currentHubType) renderSpecialHub(currentHubType, currentCategoryFilter);
+        else if (currentGroupId) renderLessons(currentGroupId);
+        else renderGroups();
+        return;
+      }
+
+      currentLesson = lesson; activeTabName = "misja"; activeMediaIndex = 0;
+      const app = document.getElementById('app');
+      const fixedInfo = FIXED_GROUP_DATA[lesson.groupId] || { kit: lesson.kitType || "SPIKE Essential", age: lesson.age || "Warsztaty" };
+      const mediaUrls = (lesson.images && lesson.images.length > 0) ? [...lesson.images] : (lesson.image ? [lesson.image] : []);
+      const scratchUrls = (lesson.scratchImgs && lesson.scratchImgs.length > 0) ? [...lesson.scratchImgs] : (lesson.scratchImg ? [lesson.scratchImg] : []);
+      const tasksList = (lesson.tasks && lesson.tasks.length > 0) ? lesson.tasks : [{ title: "Wyzwanie 1", desc: "Czy potrafisz zmodyfikować konstrukcję i dodać dodatkowy czujnik lub napęd?", img: "" }];
+
+      let completedCount = 0;
+      tasksList.forEach((_, idx) => { if (completedTasksMap[`${lesson.id}_t_${idx}`]) completedCount++; });
+
+      const backAction = currentHubType ? `renderSpecialHub('${currentHubType}', '${escapeJsStr(currentCategoryFilter)}')` : `renderLessons(${lesson.groupId})`;
+      const safeTitle = escapeJsStr(lesson.title);
+
+      app.innerHTML = `
+        <div class="max-w-6xl mx-auto w-full pt-1 pb-12 space-y-5">
+          <div class="flex items-center justify-between">
+            <button onclick="${backAction}" class="text-xs md:text-sm font-bold text-slate-600 dark:text-slate-400 hover:text-[#008be5] flex items-center gap-2 transition"><i class="fas fa-arrow-left text-[#008be5]"></i> Wróć do listy wyzwań</button>
+          </div>
+          <div>
+            <h1 class="text-3xl md:text-4xl font-black text-slate-900 dark:text-white font-heading tracking-tight">${lesson.title}</h1>
+            <div class="flex items-center gap-2 mt-3">
+              <span class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-bold px-3 py-1 rounded-xl">${fixedInfo.kit}</span>
+              <span class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-bold px-3 py-1 rounded-xl">${fixedInfo.age}</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs md:text-sm font-bold">
+            <button onclick="switchTab('misja')" id="tabBtn-misja" class="py-3 px-3 rounded-2xl flex items-center gap-2 transition bg-[#008be5] text-white shadow-md">
+              <span id="tabNum-misja" class="w-6 h-6 rounded-lg bg-white/20 text-white flex items-center justify-center font-black text-xs">1</span>
+              <span id="tabDiv-misja" class="h-3.5 w-[1px] bg-white/30"></span><i class="fas fa-bullseye text-sm"></i><span>Misja</span>
+            </button>
+            <button onclick="switchTab('zbuduj')" id="tabBtn-zbuduj" class="py-3 px-3 rounded-2xl flex items-center gap-2 transition bg-white dark:bg-pkDarkCard text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800 hover:bg-slate-50">
+              <span id="tabNum-zbuduj" class="w-6 h-6 rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-sky-400 flex items-center justify-center font-black text-xs">2</span>
+              <span id="tabDiv-zbuduj" class="h-3.5 w-[1px] bg-slate-200 dark:bg-slate-700"></span><i class="fas fa-cube text-sm"></i><span>Zbuduj</span>
+            </button>
+            <button onclick="switchTab('program')" id="tabBtn-program" class="py-3 px-3 rounded-2xl flex items-center gap-2 transition bg-white dark:bg-pkDarkCard text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800 hover:bg-slate-50">
+              <span id="tabNum-program" class="w-6 h-6 rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-sky-400 flex items-center justify-center font-black text-xs">3</span>
+              <span id="tabDiv-program" class="h-3.5 w-[1px] bg-slate-200 dark:bg-slate-700"></span><i class="fas fa-code text-sm"></i><span>Program</span>
+            </button>
+            <button onclick="switchTab('zadania')" id="tabBtn-zadania" class="py-3 px-3 rounded-2xl flex items-center gap-2 transition bg-white dark:bg-pkDarkCard text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800 hover:bg-slate-50">
+              <span id="tabNum-zadania" class="w-6 h-6 rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-sky-400 flex items-center justify-center font-black text-xs">4</span>
+              <span id="tabDiv-zadania" class="h-3.5 w-[1px] bg-slate-200 dark:bg-slate-700"></span><i class="fas fa-list-check text-sm"></i><span>Zadania</span>
+            </button>
+          </div>
+
+          <!-- 1. MISJA -->
+          <div id="tabContent-misja" style="display: block;" class="space-y-6">
+            <div class="bg-gradient-to-r from-blue-50/90 to-sky-100/70 dark:from-slate-900 dark:to-slate-900 border border-blue-100 dark:border-slate-800 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden shadow-sm">
+              <div class="flex-1 space-y-4 max-w-lg z-10">
+                <span class="bg-blue-100 dark:bg-blue-950 text-[#008be5] text-xs font-black px-3.5 py-1 rounded-full uppercase tracking-wider inline-block">MISJA</span>
+                <h3 class="text-2xl md:text-3xl font-black text-slate-900 dark:text-white font-heading tracking-tight leading-snug">${lesson.missionTitle || lesson.title}</h3>
+                <p class="text-sm md:text-base text-slate-600 dark:text-slate-300 font-medium leading-relaxed">${lesson.missionDesc || lesson.subtitle || "Zbudujesz i zaprogramujesz model robota."}</p>
+                <div class="pt-2"><button onclick="switchTab('zbuduj')" class="bg-[#008be5] hover:bg-blue-600 text-white font-extrabold text-sm px-6 py-3.5 rounded-2xl shadow-md flex items-center gap-2.5 active:scale-95 transition"><span>Rozpocznij budowę</span><i class="fas fa-arrow-right text-xs"></i></button></div>
+              </div>
+              <div class="w-full md:w-1/2 h-64 md:h-80 flex items-center justify-center z-10">
+                ${mediaUrls.length > 0 ? `<img id="heroModelImage" src="${mediaUrls[0]}" data-offline-src="${mediaUrls[0]}" referrerpolicy="no-referrer" class="max-h-full max-w-full object-contain filter drop-shadow-xl cursor-pointer hover:scale-105 transition duration-300" onclick="openActiveImageZoom()">` : EMPTY_LESSON_LEGO_SVG}
+              </div>
+            </div>
+            ${mediaUrls.length > 1 ? `<div class="flex items-center gap-3 overflow-x-auto pb-2 pt-1">${mediaUrls.map((img, i) => `<div onclick="switchHeroMedia(this, ${i})" class="media-thumb-item w-28 h-20 rounded-2xl bg-white dark:bg-slate-900 p-1.5 border-2 ${i === 0 ? 'border-[#008be5] ring-2 ring-blue-200 dark:ring-blue-900' : 'border-slate-200 dark:border-slate-800'} cursor-pointer flex-shrink-0 shadow-sm transition hover:border-[#008be5]"><img src="${img}" data-offline-src="${img}" referrerpolicy="no-referrer" class="w-full h-full object-contain"></div>`).join('')}</div>` : ''}
+            ${lesson.videoUrl ? `<div class="bg-white dark:bg-pkDarkCard border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm space-y-3"><h4 class="text-sm font-black text-slate-800 dark:text-white flex items-center gap-2 uppercase tracking-wider"><i class="fas fa-play-circle text-[#008be5] text-base"></i><span>Wideo prezentacja robota</span></h4><div class="h-72 md:h-96 bg-slate-950 rounded-2xl overflow-hidden">${renderVideoPlayerHtml(lesson.videoUrl)}</div></div>` : ''}
+          </div>
+
+          <!-- 2. ZBUDUJ -->
+          <div id="tabContent-zbuduj" style="display: none;" class="space-y-4">
+            <div class="bg-white dark:bg-pkDarkCard border border-slate-200 dark:border-slate-800 rounded-3xl p-4 sm:p-5 shadow-sm space-y-4">
+              <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-50 dark:bg-slate-900 p-3 rounded-2xl border border-slate-200 dark:border-slate-800">
+                <span class="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider ml-1"><i class="fas fa-file-pdf text-red-500 mr-1.5"></i> Instrukcja składania krok po kroku</span>
+                ${lesson.pdfUrl ? `
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <div class="flex items-center gap-1.5 bg-slate-200/80 dark:bg-slate-800 p-1 rounded-xl">
+                      <button onclick="changePdfPage(-1)" class="bg-white dark:bg-slate-700 hover:bg-slate-100 text-slate-800 dark:text-white px-3 py-1.5 rounded-lg text-xs font-black shadow-sm active:scale-95 transition">◀ Poprzednia</button>
+                      <span id="inAppPdfPageIndicator" class="text-xs font-black text-slate-800 dark:text-amber-300 px-2 min-w-[85px] text-center">Strona 1 / 1</span>
+                      <button onclick="changePdfPage(1)" class="bg-white dark:bg-slate-700 hover:bg-slate-100 text-slate-800 dark:text-white px-3 py-1.5 rounded-lg text-xs font-black shadow-sm active:scale-95 transition">Następna ▶</button>
+                    </div>
+                    <button onclick="openPdfFullscreen('${escapeJsStr(lesson.pdfUrl)}', '${safeTitle}')" class="bg-[#008be5] hover:bg-blue-600 text-white font-extrabold text-xs px-4 py-2.5 rounded-xl shadow-md flex items-center gap-2 active:scale-95 transition"><i class="fas fa-expand"></i><span>PEŁNY EKRAN</span></button>
+                  </div>
+                ` : ''}
+              </div>
+              <div class="min-h-[480px] md:min-h-[600px] bg-slate-100 dark:bg-slate-900 rounded-2xl overflow-auto border border-slate-200 dark:border-slate-800 relative flex items-center justify-center p-2 sm:p-4">
+                ${lesson.pdfUrl ? `
+                  <div id="inAppPdfStatus" class="flex flex-col items-center justify-center text-slate-500"><i class="fas fa-spinner fa-spin text-2xl text-[#008be5] mb-2"></i><span class="text-xs font-bold">Wczytywanie instrukcji...</span></div>
+                  <canvas id="inAppPdfCanvas" class="pdf-page-canvas hidden"></canvas>
+                  <iframe id="inAppPdfFallback" class="w-full h-[560px] border-0 hidden rounded-xl" allow="autoplay"></iframe>
+                ` : `<div class="flex flex-col items-center justify-center h-full text-slate-400"><i class="fas fa-file-pdf text-4xl mb-2"></i><p class="text-sm font-medium">Brak instrukcji PDF w arkuszu.</p></div>`}
+              </div>
+              <button onclick="switchTab('program')" class="w-full bg-[#008be5] hover:bg-blue-600 text-white font-black py-4 rounded-2xl shadow-md transition active:scale-98 flex items-center justify-center gap-2 text-sm"><span>PRZEJDŹ DO PROGRAMOWANIA</span><i class="fas fa-arrow-right"></i></button>
+            </div>
+          </div>
+
+          <!-- 3. PROGRAM -->
+          <div id="tabContent-program" style="display: none;" class="space-y-6">
+            <div class="bg-white dark:bg-pkDarkCard border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm space-y-4">
+              <div class="flex items-center justify-between">
+                <h4 class="text-base font-black text-slate-800 dark:text-white flex items-center gap-2"><i class="fas fa-cubes text-orange-500"></i><span>Program w bloczkach SPIKE (Scratch)</span></h4>
+                <span class="text-xs text-[#008be5] font-bold"><i class="fas fa-search-plus mr-1"></i>Dotknij obrazek, aby powiększyć</span>
+              </div>
+              ${scratchUrls.length > 0 ? `
+                <div class="h-80 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden flex items-center justify-center cursor-pointer hover:border-[#008be5] transition" onclick="openActiveScratchZoom()">
+                  <img id="mainScratchImg" src="${scratchUrls[0]}" data-offline-src="${scratchUrls[0]}" referrerpolicy="no-referrer" class="max-h-full max-w-full object-contain p-2">
+                </div>
+                ${scratchUrls.length > 1 ? `<div class="flex items-center gap-2 overflow-x-auto pt-1">${scratchUrls.map((u, sIdx) => `<button onclick="selectScratchImage('${escapeJsStr(u)}', this)" class="scratch-btn px-4 py-2 rounded-xl text-xs font-black border transition ${sIdx === 0 ? 'bg-[#008be5] text-white border-[#008be5]' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'}">Program ${sIdx + 1}</button>`).join('')}</div>` : ''}
+              ` : `<div class="p-6 bg-slate-50 dark:bg-slate-900 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl text-center text-slate-400 text-xs">Brak wgranego zrzutu programu w arkuszu.</div>`}
+              <div class="p-4 bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 rounded-2xl text-xs text-amber-950 dark:text-amber-200">
+                <strong class="font-bold block mb-1"><i class="fas fa-lightbulb mr-1 text-amber-500"></i> Wskazówki:</strong>${lesson.scratchTip || "Połącz się z hubem przez Bluetooth i przetestuj silnik!"}
+              </div>
+            </div>
+
+            <!-- ŻÓŁTY BOKS URUCHAMIANIA LEGO SPIKE 3 -->
+            <div class="bg-[#fed100] border-2 border-amber-400 p-5 rounded-3xl shadow-md flex flex-col sm:flex-row items-center justify-between gap-4 text-slate-950">
+              <div class="space-y-1 text-center sm:text-left">
+                <h4 class="text-xl sm:text-2xl font-black tracking-tight text-slate-900 font-heading">Przejdź do aplikacji Lego Spike</h4>
+                <p class="text-xs sm:text-sm font-semibold text-slate-800">Połącz się z hubem przez Bluetooth i uruchom swój program.</p>
+              </div>
+              <button onclick="launchSpike()" class="w-full sm:w-auto bg-slate-950 hover:bg-slate-800 text-white font-black text-sm md:text-base px-8 py-4 rounded-2xl shadow-xl transition active:scale-95 flex items-center justify-center gap-2.5 flex-shrink-0">
+                <span>${APP_CONFIG.przycisk_spike || 'OTWÓRZ LEGO SPIKE'}</span>
+                <i class="fas fa-arrow-up-right-from-square text-xs text-amber-300"></i>
+              </button>
+            </div>
+
+            <button onclick="switchTab('zadania')" class="w-full bg-[#008be5] hover:bg-blue-600 text-white font-black py-4 rounded-2xl shadow-md transition active:scale-98 flex items-center justify-center gap-2 text-sm"><span>PRZEJDŹ DO ZADAŃ</span><i class="fas fa-arrow-right"></i></button>
+          </div>
+
+          <!-- 4. ZADANIA -->
+          <div id="tabContent-zadania" style="display: none;" class="space-y-5">
+            <div class="flex items-center justify-between">
+              <h3 class="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2"><i class="fas fa-list-check text-[#008be5]"></i><span>Wyzwania do wykonania</span></h3>
+              <span id="tasksProgressCounter" class="text-xs font-black px-3.5 py-1.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">Ukończono: ${completedCount} / ${tasksList.length}</span>
+            </div>
+            <div class="space-y-4">
+              ${tasksList.map((t, tIdx) => {
+                const isDone = Boolean(completedTasksMap[`${lesson.id}_t_${tIdx}`]);
+                return `
+                  <div id="taskCard-${tIdx}" class="${isDone ? 'bg-emerald-50/70 dark:bg-emerald-950/25 border-2 border-emerald-500' : 'bg-white dark:bg-pkDarkCard border-2 border-slate-200 dark:border-slate-800'} rounded-3xl p-6 shadow-sm flex flex-col md:flex-row items-start justify-between gap-5 transition-all duration-300">
+                    <div class="flex-1 space-y-2">
+                      <div class="flex items-center gap-2.5">
+                        <span id="taskBadge-${tIdx}" class="w-7 h-7 rounded-xl ${isDone ? 'bg-emerald-500 text-white' : 'bg-amber-500 text-slate-950'} font-black text-xs flex items-center justify-center shadow-sm transition-colors">${isDone ? '<i class="fas fa-check"></i>' : (tIdx + 1)}</span>
+                        <h4 id="taskTitle-${tIdx}" class="text-lg font-black ${isDone ? 'text-emerald-800 dark:text-emerald-300 line-through' : 'text-slate-900 dark:text-white'} transition-colors">${t.title}</h4>
+                      </div>
+                      <p class="text-sm text-slate-600 dark:text-slate-300 font-medium leading-relaxed pt-1">${t.desc}</p>
+                      <div class="pt-1">
+                        <button id="taskBtn-${tIdx}" onclick="toggleTaskCompleted('${lesson.id}', ${tIdx}, ${tasksList.length})" class="mt-3 px-5 py-2.5 rounded-xl font-black text-xs flex items-center gap-2 transition active:scale-95 ${isDone ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/20' : 'bg-slate-100 dark:bg-slate-800 hover:bg-emerald-500 hover:text-white text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700'}">
+                          <i class="${isDone ? 'fas' : 'far'} fa-circle-check text-sm"></i><span>${isDone ? 'Zrobione! Brawo!' : 'Oznacz jako zrobione'}</span>
+                        </button>
+                      </div>
+                    </div>
+                    ${t.img ? `<div class="w-full md:w-48 h-36 bg-slate-50 dark:bg-slate-900 rounded-2xl overflow-hidden flex items-center justify-center flex-shrink-0 cursor-pointer border border-slate-200 dark:border-slate-800" onclick="openImageModalFromElem(this, '${escapeJsStr(t.title)}')"><img src="${t.img}" data-offline-src="${t.img}" referrerpolicy="no-referrer" class="max-h-full max-w-full object-contain"></div>` : ''}
+                  </div>
+                `;
+              }).join('')}
+            </div>
+            <button onclick="${backAction}" class="w-full bg-slate-900 hover:bg-black text-white font-black py-4 rounded-2xl shadow-xl transition active:scale-98 flex items-center justify-center gap-2 text-base mt-4"><i class="fas fa-check-circle text-emerald-400 text-lg"></i><span>ZAKOŃCZ MISJĘ I WRÓĆ DO LISTY</span></button>
+          </div>
+        </div>
+      `;
+
+      hydrateOfflineImages();
+      if (lesson.pdfUrl) loadPdfIntoViewer(lesson.pdfUrl);
+    }
+
+    function switchTab(tabName) {
+      activeTabName = tabName;
+      ['misja', 'zbuduj', 'program', 'zadania'].forEach(t => {
+        const content = document.getElementById(`tabContent-${t}`);
+        const btn = document.getElementById(`tabBtn-${t}`);
+        const num = document.getElementById(`tabNum-${t}`);
+        const div = document.getElementById(`tabDiv-${t}`);
+        if (!content || !btn) return;
+        if (t === tabName) {
+          content.style.display = 'block';
+          btn.className = "py-3 px-3 rounded-2xl flex items-center gap-2 transition bg-[#008be5] text-white shadow-md";
+          if (num) num.className = "w-6 h-6 rounded-lg bg-white/20 text-white flex items-center justify-center font-black text-xs";
+          if (div) div.className = "h-3.5 w-[1px] bg-white/30";
+        } else {
+          content.style.display = 'none';
+          btn.className = "py-3 px-3 rounded-2xl flex items-center gap-2 transition bg-white dark:bg-pkDarkCard text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800";
+          if (num) num.className = "w-6 h-6 rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-sky-400 flex items-center justify-center font-black text-xs";
+          if (div) div.className = "h-3.5 w-[1px] bg-slate-200 dark:bg-slate-700";
+        }
+      });
+      if (tabName === 'zbuduj' && currentPdfDoc) renderPdfPageToCanvas(currentPdfPage);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function switchHeroMedia(thumbElem, index) {
+      activeMediaIndex = index;
+      const thumbImg = thumbElem.querySelector('img'), heroImg = document.getElementById('heroModelImage');
+      if (thumbImg && heroImg) heroImg.src = thumbImg.src;
+      document.querySelectorAll('.media-thumb-item').forEach((el, idx) => {
+        el.className = (idx === index)
+          ? "media-thumb-item w-28 h-20 rounded-2xl bg-white dark:bg-slate-900 p-1.5 border-2 border-[#008be5] ring-2 ring-blue-200 dark:ring-blue-900 cursor-pointer flex-shrink-0 shadow-sm transition"
+          : "media-thumb-item w-28 h-20 rounded-2xl bg-white dark:bg-slate-900 p-1.5 border-2 border-slate-200 dark:border-slate-800 cursor-pointer flex-shrink-0 shadow-sm transition hover:border-[#008be5]";
+      });
+    }
+
+    function openActiveImageZoom() {
+      const img = document.getElementById('heroModelImage');
+      if (img && img.src) openImageModal(img.src, currentLesson ? currentLesson.title : "");
+    }
+
+    function openActiveScratchZoom() {
+      const img = document.getElementById('mainScratchImg');
+      if (img && img.src) openImageModal(img.src, "Wzorzec programu w bloczkach");
+    }
+
+    function openImageModalFromElem(containerElem, caption) {
+      const img = containerElem.querySelector('img');
+      if (img && img.src) openImageModal(img.src, caption);
+    }
+
+    async function selectScratchImage(rawSrc, btn) {
+      document.querySelectorAll('.scratch-btn').forEach(b => {
+        b.className = "scratch-btn px-4 py-2 rounded-xl text-xs font-black border transition bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700";
+      });
+      btn.className = "scratch-btn px-4 py-2 rounded-xl text-xs font-black border transition bg-[#008be5] text-white border-[#008be5]";
+      const mainImg = document.getElementById('mainScratchImg');
+      if (!mainImg) return;
+      const blob = (await getFileFromOffline(rawSrc)) || (await getFileFromOffline(normalizeUrlForFetch(rawSrc)));
+      if (blob && blob.size > 0) {
+        const objUrl = URL.createObjectURL(blob); activeObjectUrls.push(objUrl); mainImg.src = objUrl;
+      } else { mainImg.src = rawSrc; }
+    }
+
+    function openPinLoginScreen() {
+      document.getElementById('modalPinInput').value = "";
+      document.getElementById('pinErrorMsg').classList.add('hidden');
+      document.getElementById('pinLoginModal').classList.remove('hidden');
+      setTimeout(() => document.getElementById('modalPinInput').focus(), 100);
+    }
+
+    function closePinLoginScreen() { document.getElementById('pinLoginModal').classList.add('hidden'); }
+
+    function verifyPinLogin() {
+      const input = document.getElementById('modalPinInput').value.trim();
+      if (input === ADMIN_PIN) { closePinLoginScreen(); openSettingsModal(); }
+      else { document.getElementById('pinErrorMsg').classList.remove('hidden'); document.getElementById('modalPinInput').value = ""; }
+    }
+
+    function openSettingsModal() {
+      document.getElementById('lessonsSheetInput').value = LESSONS_SHEET_LINK || PERMANENT_LESSONS_SHEET;
+      document.getElementById('configSheetInput').value = CONFIG_SHEET_LINK || PERMANENT_CONFIG_SHEET;
+      document.getElementById('settingsModal').classList.remove('hidden');
+    }
+
+    function closeSettingsModal() { document.getElementById('settingsModal').classList.add('hidden'); }
+
+    function saveSheetLinks() {
+      LESSONS_SHEET_LINK = document.getElementById('lessonsSheetInput').value.trim() || PERMANENT_LESSONS_SHEET;
+      CONFIG_SHEET_LINK = document.getElementById('configSheetInput').value.trim() || PERMANENT_CONFIG_SHEET;
+      safeSetStorage('pk_lessons_sheet_link', LESSONS_SHEET_LINK);
+      safeSetStorage('pk_config_sheet_link', CONFIG_SHEET_LINK);
+      closeSettingsModal();
+      syncAllFromGoogle(true);
+    }
+
+    function changePin() {
+      const newPin = document.getElementById('newPinInput').value.trim();
+      if (newPin.length >= 4) {
+        ADMIN_PIN = newPin; safeSetStorage('pk_admin_pin', newPin);
+        alert("Pomyślnie zmieniono PIN!"); document.getElementById('newPinInput').value = "";
+      } else { alert("PIN musi mieć minimum 4 cyfry!"); }
+    }
+
+    function openImageModal(url, caption) {
+      document.getElementById('modalImg').src = url;
+      document.getElementById('modalCaption').innerText = caption || "";
+      document.getElementById('imageModal').classList.remove('hidden');
+    }
+
+    function closeImageModal() { document.getElementById('imageModal').classList.add('hidden'); }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') { closeImageModal(); closePdfFullscreen(); closePinLoginScreen(); closeSettingsModal(); }
+    });
+
+    function startAppSafe() {
+      try { initTheme(); } catch(e) {}
+      try { applyAppAppearance(); } catch(e) {}
+      try { renderGroups(); } catch(e) {}
+      setTimeout(() => {
+        const splash = document.getElementById('splashScreen');
+        if (splash) { splash.style.opacity = '0'; splash.style.visibility = 'hidden'; setTimeout(() => splash.remove(), 400); }
+      }, 2000);
+      syncAllFromGoogle(true);
+    }
+
+    if (document.readyState === 'loading') {
+      window.addEventListener('DOMContentLoaded', startAppSafe);
+    } else {
+      startAppSafe();
+    }
+  </script>
+</body>
+</html>
